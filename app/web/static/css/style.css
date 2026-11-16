@@ -87,17 +87,23 @@ pre {
   min-width: 0;
 }
 
-.header-content,
-.header-content > *,
-.quick-pills,
-.clean-section-tabs,
-.main-nav-switcher,
+/* Mobile layout containment */
+#stockViewContainer,
+#portfolioViewContainer,
+.tab-pane,
+.container,
 .main-grid,
-.main-grid > *,
-.hero-card,
 .card,
+.hero-card,
 .data-table-wrapper {
   min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.data-table-wrapper {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
 /* Header & Navbar */
@@ -239,6 +245,7 @@ header {
   margin-bottom: 24px;
   transition: border-color 0.2s;
   overflow: hidden;
+  contain: paint;
   max-width: 100%;
   width: 100%;
   box-sizing: border-box;
@@ -555,6 +562,53 @@ header {
   border-top: 1px dashed rgba(255, 255, 255, 0.08);
   padding-top: 8px;
   margin-top: 8px;
+}
+
+/* Specialized Section Grids (Desktop) */
+.etf-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.etf-holdings-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 20px;
+}
+
+.risk-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.valuation-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.sensitivity-sliders-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.portfolio-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.portfolio-columns-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
 }
 
 /* Tables (Strict RTL) */
@@ -1302,12 +1356,10 @@ footer {
   }
 
   .main-grid {
-    display: flex !important;
-    flex-direction: column !important;
+    display: block !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
-    gap: 16px !important;
   }
 
   .main-grid > *,
@@ -1317,9 +1369,12 @@ footer {
     min-width: 0 !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
+    contain: paint !important;
+    margin-bottom: 16px !important;
   }
 
   .data-table-wrapper {
+    display: block !important;
     max-width: 100% !important;
     width: 100% !important;
     min-width: 0 !important;
@@ -1328,6 +1383,30 @@ footer {
     -webkit-overflow-scrolling: touch !important;
   }
 
+  .data-table {
+    min-width: 480px !important;
+    width: 100% !important;
+    font-size: 12px;
+  }
+
+  .etf-stats-grid,
+  .etf-holdings-grid,
+  .valuation-cards-grid,
+  .sensitivity-sliders-grid,
+  .portfolio-summary-grid,
+  .portfolio-columns-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .risk-stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  #chartPriceComparison,
+  #chartMonteCarlo,
+  #chartPortfolioSectors,
   .js-plotly-plot,
   .plot-container,
   .svg-container,
@@ -1335,7 +1414,7 @@ footer {
     max-width: 100% !important;
     width: 100% !important;
     overflow: hidden !important;
-  }
+    contain: paint !important;
   }
 }
 
@@ -1411,12 +1490,10 @@ footer {
   }
 
   .main-grid {
-    display: flex !important;
-    flex-direction: column !important;
+    display: block !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
-    gap: 16px !important;
   }
 
   .main-grid > *,
@@ -1427,6 +1504,8 @@ footer {
     min-width: 0 !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
+    contain: paint !important;
+    margin-bottom: 14px !important;
   }
 
   .card-header {
@@ -1445,10 +1524,11 @@ footer {
     display: block !important;
     margin: 8px 0 16px 0 !important;
     padding: 0 0 6px 0 !important;
+    box-sizing: border-box !important;
   }
 
   .data-table {
-    min-width: 360px !important;
+    min-width: 480px !important;
     width: 100% !important;
     font-size: 12px;
   }
@@ -1516,6 +1596,14 @@ footer {
     flex-shrink: 0;
     font-size: 12px;
     padding: 6px 10px;
+  }
+
+  /* Ensure hidden cards and elements never force display */
+  [style*="display: none"],
+  [style*="display:none"],
+  .card[style*="display: none"],
+  .card[style*="display:none"] {
+    display: none !important;
   }
 }
 
