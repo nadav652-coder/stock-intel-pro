@@ -705,9 +705,10 @@ function renderCharts(data) {
         };
 
         const layoutReturn = {
+            autosize: true,
             paper_bgcolor: 'rgba(0,0,0,0)',
             plot_bgcolor: 'rgba(0,0,0,0)',
-            margin: { t: 30, r: 20, l: 45, b: 40 },
+            margin: { t: 30, r: 15, l: 35, b: 35 },
             showlegend: true,
             legend: { orientation: 'h', y: 1.15, font: { color: '#94A3B8' } },
             xaxis: { gridcolor: '#1E293B', color: '#94A3B8' },
@@ -752,9 +753,10 @@ function renderCharts(data) {
         };
 
         const layoutFan = {
+            autosize: true,
             paper_bgcolor: 'rgba(0,0,0,0)',
             plot_bgcolor: 'rgba(0,0,0,0)',
-            margin: { t: 30, r: 20, l: 45, b: 40 },
+            margin: { t: 30, r: 15, l: 35, b: 35 },
             showlegend: true,
             legend: { orientation: 'h', y: 1.15, font: { color: '#94A3B8' } },
             xaxis: { gridcolor: '#1E293B', color: '#94A3B8' },
