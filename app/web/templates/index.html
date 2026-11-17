@@ -11,7 +11,7 @@
     <!-- Plotly.js for Institutional Charts -->
     <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="/static/css/style.css?v=4.0">
+    <link rel="stylesheet" href="/static/css/style.css?v=2.9">
 </head>
 <body>
 
@@ -218,7 +218,7 @@
                     <span class="meta-chip" id="etfCategoryChip">קטגוריה: —</span>
                 </div>
 
-                <div class="etf-stats-grid">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;">
                     <div style="background: var(--bg-subtle); padding: 12px; border-radius: var(--radius-md); text-align: center;">
                         <div style="font-size: 12px; color: var(--text-muted);">דמי ניהול (Expense Ratio)</div>
                         <div id="etfExpenseRatio" class="latin" style="font-size: 22px; font-weight: 700; color: #34D399;">—</div>
@@ -238,7 +238,7 @@
                 </div>
 
                 <!-- Top 10 Holdings Table -->
-                <div class="etf-holdings-grid">
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px;">
                     <div>
                         <div style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">10 האחזקות הגדולות ביותר בקרן:</div>
                         <div class="data-table-wrapper">
@@ -308,7 +308,7 @@
                                     <span>מדדי סיכון ותנודתיות</span>
                                 </div>
                             </div>
-                            <div class="risk-stats-grid">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
                                 <div style="background: var(--bg-subtle); padding: 10px; border-radius: var(--radius-sm);">
                                     <div style="font-size: 12px; color: var(--text-muted);">תנודתיות שנתית</div>
                                     <div id="riskVol" class="latin" style="font-weight: 700; font-size: 18px;">—</div>
@@ -411,7 +411,7 @@
                         <span class="meta-chip">שולי ביטחון: <strong id="marginOfSafety" class="latin">—</strong></span>
                     </div>
 
-                    <div class="valuation-cards-grid">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
                         <div style="background: var(--bg-subtle); padding: 16px; border-radius: var(--radius-md); text-align: center;">
                             <div style="font-size: 13px; color: var(--text-muted);">מחיר הוגן מודל DCF</div>
                             <div id="dcfFairValue" style="font-size: 26px; font-weight: 700; color: #34D399;" class="latin">—</div>
@@ -436,7 +436,7 @@
                             <span>🎛️ סימולטור רגישות אינטראקטיבי (שנה הנחות ובדוק שווי מיידי):</span>
                             <span style="font-size: 12px; color: var(--text-muted);">עדכון מיידי ללא ריענון</span>
                         </div>
-                        <div class="sensitivity-sliders-grid">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
                             <div class="slider-group">
                                 <div class="slider-label-wrap">
                                     <span>שיעור היוון (WACC):</span>
@@ -573,7 +573,7 @@
                 </div>
 
                 <!-- Portfolio Summary Cards Grid -->
-                <div class="portfolio-summary-grid">
+                <div class="portfolio-summary-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px;">
                     <div style="background: var(--bg-subtle); padding: 16px; border-radius: var(--radius-md);">
                         <div style="font-size: 13px; color: var(--text-muted);">שווי תיק כולל</div>
                         <div id="portTotalValue" class="latin" style="font-size: 28px; font-weight: 800; color: #FFFFFF;">$0.00</div>
@@ -657,7 +657,7 @@
                 </div>
 
                 <!-- Visuals: Sector Allocation Donut & Correlation Matrix -->
-                <div class="portfolio-columns-grid">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
                     <div>
                         <div style="font-size: 15px; font-weight: 700; margin-bottom: 10px;">חלוקה סקטוריאלית של התיק:</div>
                         <div id="chartPortfolioSectors" style="height: 300px; width: 100%;"></div>
@@ -727,6 +727,6 @@
     </footer>
 
     <!-- Client Script -->
-    <script src="/static/js/app.js?v=4.0"></script>
+    <script src="/static/js/app.js?v=2.9"></script>
 </body>
 </html>
