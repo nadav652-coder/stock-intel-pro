@@ -11,7 +11,7 @@
     <!-- Plotly.js for Institutional Charts -->
     <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="/static/css/style.css?v=2.9">
+    <link rel="stylesheet" href="/static/css/style.css?v=5.0">
 </head>
 <body>
 
@@ -87,13 +87,13 @@
                                 <span id="heroSector" class="meta-chip">טכנולוגיה</span>
                                 <span id="heroIndustry" class="meta-chip">אלקטרוניקה צרכנית</span>
                                 <span class="meta-chip">בורסה: <span id="heroExchange" class="latin">NASDAQ</span></span>
-                                <span class="meta-chip">שווי שוק / AUM: <span id="heroMarketCap" class="latin">—</span></span>
+                                <span class="meta-chip">שווי שוק / AUM: <span id="heroMarketCap" class="latin">—</span> <span class="info-tip" data-tip="שווי השוק הכולל של החברה (Market Cap) מחושב כסך כל המניות הרגילות כפול מחיר המניה הנוכחי.">?</span></span>
                             </div>
                         </div>
                     </div>
 
                     <div class="price-hero-area">
-                        <div style="font-size: 13px; color: var(--text-muted);">מחיר נוכחי</div>
+                        <div style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center;">מחיר נוכחי <span class="info-tip" data-tip="המחיר העדכני של המניה או קרן הסל בזמן אמת בדולרים (USD) לפי שער הנעילה או העסקה האחרונה.">?</span></div>
                         <div>
                             <span id="heroPrice" class="price-large">$0.00</span>
                             <span class="price-currency">USD</span>
@@ -121,7 +121,7 @@
                 <div class="score-card primary">
                     <div>
                         <div class="score-label">
-                            <span>ציון השקעה משוקלל</span>
+                            <span>ציון השקעה משוקלל <span class="info-tip" data-tip="ציון אנליטי כולל (0-100) המשלב איכות עסקית, אטרקטיביות תמחור, פוטנציאל צמיחה, פרופיל סיכון וחיזוי מונטה קרלו.">?</span></span>
                             <span class="score-weight">שקלול כולל</span>
                         </div>
                         <div class="score-number-wrap">
@@ -139,7 +139,7 @@
                 <div class="score-card">
                     <div>
                         <div class="score-label">
-                            <span>איכות הנכס</span>
+                            <span>איכות הנכס <span class="info-tip" data-tip="מדד חוסן פיננסי, איכות המאזן, שולי רווח ותשואה על ההון (ROE) מתוך דוחות החברה הרשמיים.">?</span></span>
                             <span class="score-weight">משקל 25%</span>
                         </div>
                         <div class="score-number-wrap">
@@ -157,7 +157,7 @@
                 <div class="score-card">
                     <div>
                         <div class="score-label">
-                            <span>אטרקטיביות תמחור</span>
+                            <span>אטרקטיביות תמחור <span class="info-tip" data-tip="האם המניה נסחרת בהנחה (Undervalued) או בפרמיה יקרה ביחס למודל DCF ולמכפילי השוק ההיסטוריים.">?</span></span>
                             <span class="score-weight">משקל 30%</span>
                         </div>
                         <div class="score-number-wrap">
@@ -175,7 +175,7 @@
                 <div class="score-card">
                     <div>
                         <div class="score-label">
-                            <span>פוטנציאל צמיחה</span>
+                            <span>פוטנציאל צמיחה <span class="info-tip" data-tip="קצב הגידול השנתי בהכנסות, ברווח הנקי (EPS) ובתזרים המזומנים החופשי (FCF).">?</span></span>
                             <span class="score-weight">משקל 25%</span>
                         </div>
                         <div class="score-number-wrap">
@@ -193,7 +193,7 @@
                 <div class="score-card">
                     <div>
                         <div class="score-label">
-                            <span>רמת ביטחון / סיכון נמוך</span>
+                            <span>רמת ביטחון / סיכון נמוך <span class="info-tip" data-tip="מבוסס על תנודתיות מחירים (Volatility), ירידה מקסימלית (Max Drawdown) ומדד שארפ – ציון גבוה משקף יציבות ובטיחות גבוהה.">?</span></span>
                             <span class="score-weight">משקל 20%</span>
                         </div>
                         <div class="score-number-wrap">
@@ -213,41 +213,41 @@
                 <div class="card-header">
                     <div class="card-title">
                         <span class="card-title-icon" style="background: rgba(59,130,246,0.2); color: #60A5FA;">🧺</span>
-                        <span>מבנה קרן הסל (ETF Structure & Holdings)</span>
+                        <span>מבנה קרן הסל (ETF Structure & Holdings) <span class="info-tip" data-tip="מבנה ההחזקות, דמי הניהול והפיזור הענפי של קרן הסל.">?</span></span>
                     </div>
                     <span class="meta-chip" id="etfCategoryChip">קטגוריה: —</span>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;">
+                <div class="etf-stats-grid">
                     <div style="background: var(--bg-subtle); padding: 12px; border-radius: var(--radius-md); text-align: center;">
-                        <div style="font-size: 12px; color: var(--text-muted);">דמי ניהול (Expense Ratio)</div>
+                        <div style="font-size: 12px; color: var(--text-muted); display: flex; align-items: center; justify-content: center;">דמי ניהול (Expense Ratio) <span class="info-tip" data-tip="שיעור דמי הניהול השנתיים באחוזים הנגבים אוטומטית מנכסי הקרן. קרנות פסיביות רחבות גובות בדרך כלל 0.03%-0.20%.">?</span></div>
                         <div id="etfExpenseRatio" class="latin" style="font-size: 22px; font-weight: 700; color: #34D399;">—</div>
                     </div>
                     <div style="background: var(--bg-subtle); padding: 12px; border-radius: var(--radius-md); text-align: center;">
-                        <div style="font-size: 12px; color: var(--text-muted);">נכסים מנוהלים (AUM)</div>
+                        <div style="font-size: 12px; color: var(--text-muted); display: flex; align-items: center; justify-content: center;">נכסים מנוהלים (AUM) <span class="info-tip" data-tip="Assets Under Management: סך שווי כלל הנכסים המנוהלים בקרן הסל במיליארדי דולרים. נתון גבוה משקף סחירות ויציבות רבה.">?</span></div>
                         <div id="etfAUM" class="latin" style="font-size: 22px; font-weight: 700; color: #60A5FA;">—</div>
                     </div>
                     <div style="background: var(--bg-subtle); padding: 12px; border-radius: var(--radius-md); text-align: center;">
-                        <div style="font-size: 12px; color: var(--text-muted);">תשואת דיבידנד (Yield)</div>
+                        <div style="font-size: 12px; color: var(--text-muted); display: flex; align-items: center; justify-content: center;">תשואת דיבידנד (Yield) <span class="info-tip" data-tip="אחוז הדיבידנד השנתי המחולק למשקיעים ביחס למחיר הקרן הנוכחי.">?</span></div>
                         <div id="etfYield" class="latin" style="font-size: 22px; font-weight: 700; color: #F59E0B;">—</div>
                     </div>
                     <div style="background: var(--bg-subtle); padding: 12px; border-radius: var(--radius-md); text-align: center;">
-                        <div style="font-size: 12px; color: var(--text-muted);">בטא מול S&P 500</div>
+                        <div style="font-size: 12px; color: var(--text-muted); display: flex; align-items: center; justify-content: center;">בטא מול S&P 500 <span class="info-tip" data-tip="מדד תנודתיות הקרן ביחס למדד השוק הכללי. ערך קרוב ל-1.0 משקף תנועה מתואמת לשוק.">?</span></div>
                         <div id="etfBeta" class="latin" style="font-size: 22px; font-weight: 700; color: #A78BFA;">—</div>
                     </div>
                 </div>
 
                 <!-- Top 10 Holdings Table -->
-                <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px;">
+                <div class="etf-holdings-grid">
                     <div>
-                        <div style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">10 האחזקות הגדולות ביותר בקרן:</div>
+                        <div style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">10 האחזקות הגדולות ביותר בקרן: <span class="info-tip" data-tip="המניות בעלות המשקל הכבד ביותר בקרן הסל אשר מניעות את עיקר ביצועיה.">?</span></div>
                         <div class="data-table-wrapper">
                             <table class="data-table">
                                 <thead>
                                     <tr>
                                         <th>סימול</th>
                                         <th>שם החברה</th>
-                                        <th>משקל בקרן (%)</th>
+                                        <th>משקל בקרן (%) <span class="info-tip" data-tip="החלק היחסי של המניה מתוך סך שווי נכסי הקרן.">?</span></th>
                                     </tr>
                                 </thead>
                                 <tbody id="etfHoldingsTableBody"></tbody>
@@ -255,7 +255,7 @@
                         </div>
                     </div>
                     <div>
-                        <div style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">התפלגות סקטוריאלית של הקרן:</div>
+                        <div style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">התפלגות סקטוריאלית של הקרן: <span class="info-tip" data-tip="חלוקת השקעות הקרן לפי ענפי פעילות לבחינת רמת הפיזור והחשיפה הסקטוריאלית.">?</span></div>
                         <div id="etfSectorList" style="display: flex; flex-direction: column; gap: 6px;"></div>
                     </div>
                 </div>
@@ -279,7 +279,7 @@
                                 <span class="card-title-icon" style="background: rgba(245,158,11,0.15); color: #FBBF24;">📈</span>
                                 <span>ביצועים היסטוריים ביחס למדד S&P 500</span>
                             </div>
-                            <span style="font-size: 13px; color: var(--text-muted);">השוואת תשואה מצטברת</span>
+                            <span style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center;">השוואת תשואה מצטברת <span class="info-tip" data-tip="השוואת תשואת המניה באחוזים (קו כחול) מול מדד הייחוס S&P 500 (קו מקווקו) ב-250 ימי המסחר האחרונים.">?</span></span>
                         </div>
                         <div id="chartPriceComparison" style="height: 320px; width: 100%; margin-bottom: 20px;"></div>
                         <div class="data-table-wrapper">
@@ -287,10 +287,10 @@
                                 <thead>
                                     <tr>
                                         <th>תקופה</th>
-                                        <th>תשואת הנכס</th>
-                                        <th>תשואת S&P 500</th>
-                                        <th>פער אלפא (Alpha)</th>
-                                        <th>הכרעה</th>
+                                        <th>תשואת הנכס <span class="info-tip" data-tip="שיעור התשואה הכולל שהניבה המניה בפרק הזמן הנבחר.">?</span></th>
+                                        <th>תשואת S&P 500 <span class="info-tip" data-tip="תשואת מדד השוק S&P 500 באותה תקופה בדיוק לצורך השוואה אובייקטיבית.">?</span></th>
+                                        <th>פער אלפא (Alpha) <span class="info-tip" data-tip="התשואה העודפת מעל מדד השוק. ערך חיובי מעיד על ניצחון וביצועי יתר ביחס לשוק.">?</span></th>
+                                        <th>הכרעה <span class="info-tip" data-tip="האם הנכס היכה את המדד (Winner) או פיגר אחריו (Laggard) באותה תקופה.">?</span></th>
                                     </tr>
                                 </thead>
                                 <tbody id="performanceTableBody"></tbody>
@@ -305,32 +305,32 @@
                             <div class="card-header">
                                 <div class="card-title">
                                     <span class="card-title-icon" style="background: rgba(245,158,11,0.15); color: #FBBF24;">⚡</span>
-                                    <span>מדדי סיכון ותנודתיות</span>
+                                    <span>מדדי סיכון ותנודתיות <span class="info-tip" data-tip="שקלול מדדים כמותיים להערכת רמת התנודתיות, עומק ההפסדים הפוטנציאלי והתשואה מותאמת הסיכון.">?</span></span>
                                 </div>
                             </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                            <div class="risk-stats-grid">
                                 <div style="background: var(--bg-subtle); padding: 10px; border-radius: var(--radius-sm);">
-                                    <div style="font-size: 12px; color: var(--text-muted);">תנודתיות שנתית</div>
+                                    <div style="font-size: 12px; color: var(--text-muted); display: flex; align-items: center;">תנודתיות שנתית <span class="info-tip" data-tip="סטיית תקן שנתית של תנודות המחיר. ערך נמוך משקף יציבות רבה, ערך גבוה משקף תנודות מחירים חדות.">?</span></div>
                                     <div id="riskVol" class="latin" style="font-weight: 700; font-size: 18px;">—</div>
                                 </div>
                                 <div style="background: var(--bg-subtle); padding: 10px; border-radius: var(--radius-sm);">
-                                    <div style="font-size: 12px; color: var(--text-muted);">בטא (Beta מול S&P)</div>
+                                    <div style="font-size: 12px; color: var(--text-muted); display: flex; align-items: center;">בטא (Beta מול S&P) <span class="info-tip" data-tip="רגישות תנועת המניה לעומת תנועת השוק הכללי. בטא מעל 1 פירושה תנודתיות גדולה מהשוק.">?</span></div>
                                     <div id="riskBeta" class="latin" style="font-weight: 700; font-size: 18px;">—</div>
                                 </div>
                                 <div style="background: var(--bg-subtle); padding: 10px; border-radius: var(--radius-sm);">
-                                    <div style="font-size: 12px; color: var(--text-muted);">ירידה מקסימלית (MDD)</div>
+                                    <div style="font-size: 12px; color: var(--text-muted); display: flex; align-items: center;">ירידה מקסימלית (MDD) <span class="info-tip" data-tip="Max Drawdown: הירידה החדה ביותר משער השיא לשער השפל ב-5 השנים האחרונות (מייצג את תרחיש ההפסד הגרוע ביותר).">?</span></div>
                                     <div id="riskDrawdown" class="latin" style="font-weight: 700; font-size: 18px; color: var(--color-negative);">—</div>
                                 </div>
                                 <div style="background: var(--bg-subtle); padding: 10px; border-radius: var(--radius-sm);">
-                                    <div style="font-size: 12px; color: var(--text-muted);">יחס שארפ (Sharpe)</div>
+                                    <div style="font-size: 12px; color: var(--text-muted); display: flex; align-items: center;">יחס שארפ (Sharpe) <span class="info-tip" data-tip="מודד את התשואה העודפת מעל ריבית חסרת סיכון לכל יחידת תנודתיות. שארפ מעל 1 נחשב טוב ומעל 2 מעולה.">?</span></div>
                                     <div id="riskSharpe" class="latin" style="font-weight: 700; font-size: 18px;">—</div>
                                 </div>
                                 <div style="background: var(--bg-subtle); padding: 10px; border-radius: var(--radius-sm);">
-                                    <div style="font-size: 12px; color: var(--text-muted);">יחס סורטינו (Sortino)</div>
+                                    <div style="font-size: 12px; color: var(--text-muted); display: flex; align-items: center;">יחס סורטינו (Sortino) <span class="info-tip" data-tip="מודד תשואה ביחס לתנודתיות שלילית (הפסדים) בלבד, ללא 'הענשת' המניה על זינוקים חיוביים למעלה.">?</span></div>
                                     <div id="riskSortino" class="latin" style="font-weight: 700; font-size: 18px;">—</div>
                                 </div>
                                 <div style="background: var(--bg-subtle); padding: 10px; border-radius: var(--radius-sm);">
-                                    <div style="font-size: 12px; color: var(--text-muted);">סיכון שנתי (VaR 95%)</div>
+                                    <div style="font-size: 12px; color: var(--text-muted); display: flex; align-items: center;">סיכון שנתי (VaR 95%) <span class="info-tip" data-tip="Value at Risk: ההפסד היומי המקסימלי הצפוי ברמת ביטחון סטטיסטית של 95% בתנאי שוק סטנדרטיים.">?</span></div>
                                     <div id="riskVaR" class="latin" style="font-weight: 700; font-size: 18px; color: var(--color-negative);">—</div>
                                 </div>
                             </div>
@@ -376,7 +376,7 @@
                             <div class="card-header">
                                 <div class="card-title">
                                     <span class="card-title-icon" style="background: rgba(16,185,129,0.15); color: #34D399;">🏛️</span>
-                                    <span>מדד Piotroski F-Score</span>
+                                    <span>מדד Piotroski F-Score <span class="info-tip" data-tip="ציון איכות חשבונאית מ-0 עד 9 הבודק 9 קריטריונים של רווחיות, מנוף פיננסי ונזילות מתוך הדוחות. ציון 8-9 משקף חוסן יוצא דופן.">?</span></span>
                                 </div>
                                 <span id="piotroskiScore" class="score-number latin" style="font-size: 22px; color: #34D399;">0/9</span>
                             </div>
@@ -389,7 +389,7 @@
                             <div class="card-header">
                                 <div class="card-title">
                                     <span class="card-title-icon" style="background: rgba(239,68,68,0.15); color: #F87171;">🛡️</span>
-                                    <span>איתנות פיננסית (Altman Z)</span>
+                                    <span>איתנות פיננסית (Altman Z) <span class="info-tip" data-tip="מודל סטטיסטי מוביל לחיזוי חדלות פירעון. ציון מעל 3.0 מסמל אזור בטוח (Safe Zone), מתחת ל-1.8 מסמל אזור סיכון (Distress Zone).">?</span></span>
                                 </div>
                                 <span id="altmanScore" class="score-number latin" style="font-size: 22px; color: #60A5FA;">0.00</span>
                             </div>
@@ -408,20 +408,20 @@
                             <span class="card-title-icon" style="background: rgba(16,185,129,0.15); color: #34D399;">💰</span>
                             <span>הערכת שווי, שולי ביטחון ומודל DCF (Discounted Cash Flow)</span>
                         </div>
-                        <span class="meta-chip">שולי ביטחון: <strong id="marginOfSafety" class="latin">—</strong></span>
+                        <span class="meta-chip">שולי ביטחון: <strong id="marginOfSafety" class="latin">—</strong> <span class="info-tip" data-tip="Margin of Safety: הפער באחוזים בין השווי ההוגן הפנימי לבין מחיר השוק. שולי ביטחון חיוביים גבוהים מספקים כרית הגנה למשקיע.">?</span></span>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
+                    <div class="valuation-cards-grid">
                         <div style="background: var(--bg-subtle); padding: 16px; border-radius: var(--radius-md); text-align: center;">
-                            <div style="font-size: 13px; color: var(--text-muted);">מחיר הוגן מודל DCF</div>
+                            <div style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center; justify-content: center;">מחיר הוגן מודל DCF <span class="info-tip" data-tip="שווי פנימי (Intrinsic Value) המחושב באמצעות מודל היוון תזרימי מזומנים חופשיים עתידיים (Free Cash Flow) בריבית WACC.">?</span></div>
                             <div id="dcfFairValue" style="font-size: 26px; font-weight: 700; color: #34D399;" class="latin">—</div>
                         </div>
                         <div style="background: var(--bg-subtle); padding: 16px; border-radius: var(--radius-md); text-align: center;">
-                            <div style="font-size: 13px; color: var(--text-muted);">מחיר הוגן לפי מכפילי שוק</div>
+                            <div style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center; justify-content: center;">מחיר הוגן לפי מכפילי שוק <span class="info-tip" data-tip="הערכת שווי יחסית המבוססת על מכפיל הרווח ההיסטורי והממוצע בענף כפול הרווח למניה (EPS).">?</span></div>
                             <div id="peFairValue" style="font-size: 26px; font-weight: 700; color: #60A5FA;" class="latin">—</div>
                         </div>
                         <div style="background: var(--bg-subtle); padding: 16px; border-radius: var(--radius-md); text-align: center;">
-                            <div style="font-size: 13px; color: var(--text-muted);">מחיר יעד משוקלל (Blended Target)</div>
+                            <div style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center; justify-content: center;">מחיר יעד משוקלל <span class="info-tip" data-tip="מחיר יעד משולב (Blended Target) המאזן בין מודל תזרימי המזומנים (DCF) לבין הערכת מכפילי השוק.">?</span></div>
                             <div id="blendedFairValue" style="font-size: 26px; font-weight: 700; color: #F59E0B;" class="latin">—</div>
                         </div>
                     </div>
@@ -436,17 +436,17 @@
                             <span>🎛️ סימולטור רגישות אינטראקטיבי (שנה הנחות ובדוק שווי מיידי):</span>
                             <span style="font-size: 12px; color: var(--text-muted);">עדכון מיידי ללא ריענון</span>
                         </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div class="sensitivity-sliders-grid">
                             <div class="slider-group">
                                 <div class="slider-label-wrap">
-                                    <span>שיעור היוון (WACC):</span>
+                                    <span>שיעור היוון (WACC): <span class="info-tip" data-tip="מחיר ההון המשוקלל של החברה (Weighted Average Cost of Capital) - שיעור התשואה הנדרש להיוון התזרימים להיום.">?</span></span>
                                     <span id="valWacc" class="latin" style="font-weight: 700; color: #60A5FA;">9.0%</span>
                                 </div>
                                 <input type="range" id="sliderWacc" class="slider-input" min="5" max="15" step="0.5" value="9">
                             </div>
                             <div class="slider-group">
                                 <div class="slider-label-wrap">
-                                    <span>קצב צמיחת תזרים ל-5 שנים:</span>
+                                    <span>קצב צמיחת תזרים ל-5 שנים: <span class="info-tip" data-tip="קצב הגידול השנתי הצפוי בתזרים המזומנים החופשי (Free Cash Flow) ב-5 השנים הקרובות.">?</span></span>
                                     <span id="valGrowth" class="latin" style="font-weight: 700; color: #34D399;">10.0%</span>
                                 </div>
                                 <input type="range" id="sliderGrowth" class="slider-input" min="0" max="30" step="1" value="10">
@@ -471,7 +471,7 @@
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-title-icon" style="background: rgba(139,92,246,0.15); color: #A78BFA;">🎲</span>
-                            <span>חיזוי הסתברותי וסימולציית מונטה קרלו (5,000 תרחישים)</span>
+                            <span>חיזוי הסתברותי וסימולציית מונטה קרלו (5,000 תרחישים) <span class="info-tip" data-tip="סימולציה סטטיסטית מתקדמת המריצה אלפי מסלולי מחיר אפשריים בהתבסס על תנודתיות, תשואות היסטוריות ודגימת בלוקים.">?</span></span>
                         </div>
                         <span class="meta-chip">כולל Block Bootstrapping לזנבות שמנים</span>
                     </div>
@@ -481,12 +481,12 @@
                             <thead>
                                 <tr>
                                     <th>טווח זמן</th>
-                                    <th>הסתברות לתשואה חיובית</th>
-                                    <th>הסתברות להכות S&P 500</th>
-                                    <th>תרחיש פסימי (P10)</th>
-                                    <th>תרחיש בסיס (P50)</th>
-                                    <th>תרחיש אופטימי (P90)</th>
-                                    <th>רמת ביטחון</th>
+                                    <th>הסתברות לתשואה חיובית <span class="info-tip" data-tip="אחוז הסימולציות מתוך 5,000 שהסתיימו בשער גבוה ממחיר הקנייה הנוכחי (רווח).">?</span></th>
+                                    <th>הסתברות להכות S&P 500 <span class="info-tip" data-tip="אחוז הסימולציות שבהן תשואת המניה הייתה גבוהה מתשואת מדד הייחוס S&P 500.">?</span></th>
+                                    <th>תרחיש פסימי (P10) <span class="info-tip" data-tip="ב-90% מהמקרים מחיר המניה סיים מעל שער זה (מייצג כרית ביטחון לתרחיש שלילי).">?</span></th>
+                                    <th>תרחיש בסיס (P50) <span class="info-tip" data-tip="שער החציון הצפוי של המניה לפי התפלגות כלל מסלולי הסימולציה.">?</span></th>
+                                    <th>תרחיש אופטימי (P90) <span class="info-tip" data-tip="ב-10% מהסימולציות הטובות ביותר, המניה הגיעה לשער זה או למעלה מכך.">?</span></th>
+                                    <th>רמת ביטחון <span class="info-tip" data-tip="רמת המובהקות וההסתברות הסטטיסטית להצלחת התרחיש.">?</span></th>
                                 </tr>
                             </thead>
                             <tbody id="forecastTableBody"></tbody>
@@ -508,24 +508,24 @@
                         <div class="card-header">
                             <div class="card-title">
                                 <span class="card-title-icon" style="background: rgba(59,130,246,0.15); color: #60A5FA;">🏰</span>
-                                <span>ניתוח איכותי, יתרון תחרותי וחפיר כלכלי</span>
+                                <span>ניתוח איכותי, יתרון תחרותי וחפיר כלכלי <span class="info-tip" data-tip="ניתוח מאפייני העסק מעבר למספרים: חפיר כלכלי, איכות ההנהלה ויתרון תחרותי בר-קיימא.">?</span></span>
                             </div>
                         </div>
                         <div style="font-size: 14px; line-height: 1.7; color: var(--text-secondary);">
                             <div style="margin-bottom: 16px;">
-                                <strong style="color: var(--text-primary); font-size: 15px;">יתרון תחרותי וחפיר כלכלי (Economic Moat):</strong>
+                                <strong style="color: var(--text-primary); font-size: 15px;">יתרון תחרותי וחפיר כלכלי (Economic Moat): <span class="info-tip" data-tip="היכולת של החברה לשמור על רווחיות יתרה ולהגן על נתח השוק שלה מפני מתחרים לאורך שנים רבות.">?</span></strong>
                                 <div id="moatText" style="margin-top: 4px;">—</div>
                             </div>
                             <div style="margin-bottom: 16px;">
-                                <strong style="color: var(--text-primary); font-size: 15px;">איכות ההנהלה והקצאת הון:</strong>
+                                <strong style="color: var(--text-primary); font-size: 15px;">איכות ההנהלה והקצאת הון: <span class="info-tip" data-tip="בחינת החלטות ההנהלה בהשקעות חוזרות בעסק, רכישות אסטרטגיות, שמירה על מינוף סביר ותגמול בעלי המניות.">?</span></strong>
                                 <div id="managementText" style="margin-top: 4px;">—</div>
                             </div>
                             <div style="margin-bottom: 16px;">
-                                <strong style="color: var(--text-primary); font-size: 15px;">זרזים עיקריים לעליית מחיר (Upside Catalysts):</strong>
+                                <strong style="color: var(--text-primary); font-size: 15px;">זרזים עיקריים לעליית מחיר (Upside Catalysts): <span class="info-tip" data-tip="אירועים עתידיים שעשויים להאיץ את צמיחת החברה ולהציף ערך למניה (מוצרים חדשים, כניסה לשווקים).">?</span></strong>
                                 <div id="catalystsText" style="margin-top: 4px;">—</div>
                             </div>
                             <div>
-                                <strong style="color: var(--text-primary); font-size: 15px;">סיכונים ואיומים עיקריים:</strong>
+                                <strong style="color: var(--text-primary); font-size: 15px;">סיכונים ואיומים עיקריים: <span class="info-tip" data-tip="גורמי סיכון מהותיים העלולים לפגוע בעסק (רגולציה, תחרות גוברת, לחץ על שולי רווח).">?</span></strong>
                                 <div id="threatsText" style="margin-top: 4px;">—</div>
                             </div>
                         </div>
@@ -536,7 +536,7 @@
                         <div class="card-header">
                             <div class="card-title">
                                 <span class="card-title-icon" style="background: rgba(245,158,11,0.15); color: #FBBF24;">📋</span>
-                                <span>צ'קליסט לבדיקה לפני קבלת החלטה</span>
+                                <span>צ'קליסט לבדיקה לפני קבלת החלטה <span class="info-tip" data-tip="10 מבחני סינון קפדניים של וורן באפט ופיטר לינץ' לאיתור חברות איכותיות במחיר הוגן.">?</span></span>
                             </div>
                         </div>
                         <div id="preChecklist"></div>
@@ -573,27 +573,27 @@
                 </div>
 
                 <!-- Portfolio Summary Cards Grid -->
-                <div class="portfolio-summary-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px;">
+                <div class="portfolio-summary-grid">
                     <div style="background: var(--bg-subtle); padding: 16px; border-radius: var(--radius-md);">
-                        <div style="font-size: 13px; color: var(--text-muted);">שווי תיק כולל</div>
+                        <div style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center;">שווי תיק כולל <span class="info-tip" data-tip="שווי השוק הכולל של כלל ההחזקות בתיק לפי שער המסחר העדכני ביותר.">?</span></div>
                         <div id="portTotalValue" class="latin" style="font-size: 28px; font-weight: 800; color: #FFFFFF;">$0.00</div>
                         <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">עלות רכישה: <span id="portTotalCost" class="latin">$0.00</span></div>
                     </div>
 
                     <div style="background: var(--bg-subtle); padding: 16px; border-radius: var(--radius-md);">
-                        <div style="font-size: 13px; color: var(--text-muted);">רווח / הפסד כולל</div>
+                        <div style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center;">רווח / הפסד כולל <span class="info-tip" data-tip="סך הרווח או ההפסד המצטבר בדולרים ובאחוזים על התיק (PnL) ביחס לעלות הרכישה המקורית.">?</span></div>
                         <div id="portTotalPnL" class="latin" style="font-size: 28px; font-weight: 800; color: #34D399;">$0.00</div>
                         <div id="portTotalPnLPct" class="latin" style="font-size: 13px; font-weight: 700; color: #34D399; margin-top: 4px;">+0.0%</div>
                     </div>
 
                     <div style="background: var(--bg-subtle); padding: 16px; border-radius: var(--radius-md);">
-                        <div style="font-size: 13px; color: var(--text-muted);">בטא משוקללת מול S&P 500</div>
+                        <div style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center;">בטא משוקללת מול S&P 500 <span class="info-tip" data-tip="מדד תנודתיות משוקלל של כלל התיק לפי משקל כל נכס. מעל 1 פירושו תנודתיות גבוהה ממדד השוק.">?</span></div>
                         <div id="portWeightedBeta" class="latin" style="font-size: 28px; font-weight: 800; color: #60A5FA;">1.00</div>
                         <div id="portRiskProfile" style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">רמת סיכון: מאוזנת</div>
                     </div>
 
                     <div style="background: var(--bg-subtle); padding: 16px; border-radius: var(--radius-md);">
-                        <div style="font-size: 13px; color: var(--text-muted);">ציון איכות משוקלל לתיק</div>
+                        <div style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center;">ציון איכות משוקלל לתיק <span class="info-tip" data-tip="ממוצע משוקלל של ציוני האיכות והאיתנות הפיננסית של החברות המרכיבות את התיק.">?</span></div>
                         <div id="portQualityScore" class="latin" style="font-size: 28px; font-weight: 800; color: #F59E0B;">0 / 100</div>
                         <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">ציון תמחור: <span id="portValuationScore" class="latin">0</span></div>
                     </div>
@@ -629,20 +629,20 @@
                 </div>
 
                 <!-- Holdings Table -->
-                <div style="font-size: 15px; font-weight: 700; margin-bottom: 10px;">הרכב נכסי התיק:</div>
+                <div style="font-size: 15px; font-weight: 700; margin-bottom: 10px;">הרכב נכסי התיק: <span class="info-tip" data-tip="רשימת כלל המניות וקרנות הסל המוחזקות בתיק כולל כמויות, שערי קנייה ותשואות בזמן אמת.">?</span></div>
                 <div class="data-table-wrapper" style="margin-bottom: 24px;">
                     <table class="data-table">
                         <thead>
                             <tr>
                                 <th>סימול</th>
-                                <th>סקטור</th>
-                                <th>כמות</th>
-                                <th>מחיר קנייה ($)</th>
-                                <th>מחיר נוכחי ($)</th>
-                                <th>שווי נוכחי ($)</th>
-                                <th>רווח / הפסד ($)</th>
-                                <th>תשואה (%)</th>
-                                <th>משקל בתיק (%)</th>
+                                <th>סקטור <span class="info-tip" data-tip="הענף הכלכלי שאליו משתייך הנכס (למשל: טכנולוגיה, פיננסים, בריאות).">?</span></th>
+                                <th>כמות <span class="info-tip" data-tip="מספר המניות או יחידות הקרן המוחזקות בתיק.">?</span></th>
+                                <th>מחיר קנייה ($) <span class="info-tip" data-tip="מחיר הרכישה הממוצע ליחידה בדולרים.">?</span></th>
+                                <th>מחיר נוכחי ($) <span class="info-tip" data-tip="מחיר השוק העדכני של הנכס בזמן אמת.">?</span></th>
+                                <th>שווי נוכחי ($) <span class="info-tip" data-tip="סך שווי השוק של ההחזקה (כמות כפול מחיר נוכחי).">?</span></th>
+                                <th>רווח / הפסד ($) <span class="info-tip" data-tip="סך הרווח או ההפסד הכספי המצטבר בדולרים בפוזיציה זו.">?</span></th>
+                                <th>תשואה (%) <span class="info-tip" data-tip="אחוז הרווח או ההפסד ביחס למחיר הקנייה המקורי.">?</span></th>
+                                <th>משקל בתיק (%) <span class="info-tip" data-tip="האחוז שמהווה החזקה זו מתוך סך שווי כלל תיק ההשקעות.">?</span></th>
                                 <th>פעולות</th>
                             </tr>
                         </thead>
@@ -657,13 +657,13 @@
                 </div>
 
                 <!-- Visuals: Sector Allocation Donut & Correlation Matrix -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <div class="portfolio-columns-grid">
                     <div>
-                        <div style="font-size: 15px; font-weight: 700; margin-bottom: 10px;">חלוקה סקטוריאלית של התיק:</div>
+                        <div style="font-size: 15px; font-weight: 700; margin-bottom: 10px;">חלוקה סקטוריאלית של התיק: <span class="info-tip" data-tip="התפלגות הנכסים בתיק לפי ענפים שונים. מומלץ למנוע חשיפת יתר לסקטור בודד מעל 30%.">?</span></div>
                         <div id="chartPortfolioSectors" style="height: 300px; width: 100%;"></div>
                     </div>
                     <div>
-                        <div style="font-size: 15px; font-weight: 700; margin-bottom: 10px;">מטריצת מתאם בין הנכסים (Correlation Matrix):</div>
+                        <div style="font-size: 15px; font-weight: 700; margin-bottom: 10px;">מטריצת מתאם בין הנכסים (Correlation Matrix): <span class="info-tip" data-tip="מודדת את הקשר הסטטיסטי בין תנודות הנכסים. מתאם קרוב ל-1.0 מצביע על תנועה זהה ומפחית את יעילות הפיזור; מתאם נמוך מקטין את תנודתיות התיק.">?</span></div>
                         <div id="portCorrelationContainer" class="data-table-wrapper" style="min-height: 250px;">
                             <div style="padding: 30px; text-align: center; color: var(--text-muted);">
                                 מטריצת המתאם תוצג כאשר ישנם לפחות 2 נכסים בתיק.
@@ -717,6 +717,26 @@
         </div>
     </div>
 
+    <!-- Mobile Explanation Bottom Sheet Modal -->
+    <div id="mobileTipModal" class="mobile-tip-overlay" aria-hidden="true">
+        <div class="mobile-tip-sheet" role="dialog" aria-modal="true" aria-labelledby="mobileTipTitle">
+            <div class="mobile-tip-drag-handle"></div>
+            <div class="mobile-tip-header">
+                <div class="mobile-tip-title-wrap">
+                    <span class="mobile-tip-icon">💡</span>
+                    <h3 id="mobileTipTitle" class="mobile-tip-title">הסבר מונח</h3>
+                </div>
+                <button id="closeMobileTipBtn" class="mobile-tip-close" aria-label="סגור חלון הסבר">✕</button>
+            </div>
+            <div id="mobileTipBody" class="mobile-tip-body">
+                תוכן ההסבר יופיע כאן.
+            </div>
+            <div class="mobile-tip-footer">
+                <button id="dismissMobileTipBtn" class="mobile-tip-action-btn">הבנתי, תודה 👍</button>
+            </div>
+        </div>
+    </div>
+
     <footer>
         <div class="container">
             <div>StockIntel Pro &copy; 2026 | מערכת חכמה לניתוח מניות, קרנות סל (ETFs) ותיקי השקעות</div>
@@ -727,6 +747,6 @@
     </footer>
 
     <!-- Client Script -->
-    <script src="/static/js/app.js?v=2.9"></script>
+    <script src="/static/js/app.js?v=5.0"></script>
 </body>
 </html>

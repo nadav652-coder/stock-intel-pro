@@ -460,7 +460,7 @@ function renderFundamentalGrid(metrics) {
 
         card.innerHTML = `
             <div class="metric-top">
-                <span class="metric-name">${m.name}</span>
+                <span class="metric-name">${m.name} <span class="info-tip" data-tip="${m.explanation || ''}" tabindex="0">?</span></span>
                 <span class="metric-badge ${badgeClass}">${badgeLabel}</span>
             </div>
             <div class="metric-value latin">${m.formatted}</div>
@@ -1201,3 +1201,105 @@ window.addEventListener("resize", () => {
         }
     });
 });
+
+// ==========================================================================
+// Interactive Tooltip & Mobile Bottom Sheet Explanation System
+// ==========================================================================
+
+function initMobileTooltipSystem() {
+    const modal = document.getElementById("mobileTipModal");
+    const titleEl = document.getElementById("mobileTipTitle");
+    const bodyEl = document.getElementById("mobileTipBody");
+    const closeBtn = document.getElementById("closeMobileTipBtn");
+    const dismissBtn = document.getElementById("dismissMobileTipBtn");
+
+    function closeMobileTip() {
+        if (!modal) return;
+        modal.classList.remove("active");
+        modal.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+    }
+
+    function openMobileTip(title, text) {
+        if (!modal) return;
+        if (titleEl) titleEl.textContent = title || "הסבר מונח";
+        if (bodyEl) bodyEl.textContent = text || "";
+        modal.classList.add("active");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+    }
+
+    if (closeBtn) closeBtn.addEventListener("click", closeMobileTip);
+    if (dismissBtn) dismissBtn.addEventListener("click", closeMobileTip);
+    if (modal) {
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+                closeMobileTip();
+            }
+        });
+    }
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal && modal.classList.contains("active")) {
+            closeMobileTip();
+        }
+    });
+
+    // Touch swipe down on sheet to dismiss
+    let touchStartY = 0;
+    const sheet = modal ? modal.querySelector(".mobile-tip-sheet") : null;
+    if (sheet) {
+        sheet.addEventListener("touchstart", (e) => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        sheet.addEventListener("touchmove", (e) => {
+            const currentY = e.touches[0].clientY;
+            const diff = currentY - touchStartY;
+            if (diff > 60) {
+                closeMobileTip();
+            }
+        }, { passive: true });
+    }
+
+    // Helper to derive clean Hebrew title from container
+    function deriveTipTitle(tip) {
+        if (tip.getAttribute("data-title")) {
+            return tip.getAttribute("data-title");
+        }
+        const parent = tip.parentElement;
+        if (!parent) return "הסבר מונח";
+        const clone = parent.cloneNode(true);
+        clone.querySelectorAll(".info-tip, svg, button").forEach(el => el.remove());
+        let clean = clone.textContent.replace(/[\?💡📈💰🎲🧺🏛️🛡️🎯⚡]/g, "").trim();
+        if (clean.includes(":")) {
+            clean = clean.split(":")[0].trim();
+        }
+        return (clean.length > 0 && clean.length < 45) ? clean : "הסבר מונח";
+    }
+
+    // Click/tap handler on document
+    document.addEventListener("click", (e) => {
+        const tip = e.target.closest(".info-tip");
+        if (!tip) return;
+
+        const tipText = tip.getAttribute("data-tip");
+        if (!tipText) return;
+
+        // On mobile / touch screens: explicitly show bottom sheet modal
+        const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window);
+        if (isMobile) {
+            e.preventDefault();
+            e.stopPropagation();
+            const tipTitle = deriveTipTitle(tip);
+            openMobileTip(tipTitle, tipText);
+        }
+    });
+}
+
+// Initialize on DOM load
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initMobileTooltipSystem);
+} else {
+    initMobileTooltipSystem();
+}
