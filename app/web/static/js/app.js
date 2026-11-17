@@ -316,6 +316,33 @@ function renderAnalysis(data) {
     }
     document.getElementById("heroMarketCap").textContent = mcapStr;
 
+    // Populate Quick Terminal KPI Bar
+    if (document.getElementById("kpiMarketCap")) document.getElementById("kpiMarketCap").textContent = mcapStr;
+    if (document.getElementById("kpiFiftyTwoWeek")) {
+        if (profile.fifty_two_week_low && profile.fifty_two_week_high) {
+            document.getElementById("kpiFiftyTwoWeek").textContent = `$${Number(profile.fifty_two_week_low).toFixed(1)} - $${Number(profile.fifty_two_week_high).toFixed(1)}`;
+        } else {
+            document.getElementById("kpiFiftyTwoWeek").textContent = "—";
+        }
+    }
+    if (document.getElementById("kpiPE")) {
+        const peMetric = (fund && fund.metrics ? fund.metrics : []).find(m => m.id === "pe_ratio");
+        document.getElementById("kpiPE").textContent = peMetric && peMetric.formatted !== "לא זמין" ? peMetric.formatted : "—";
+    }
+    if (document.getElementById("kpiDivYield")) {
+        let divVal = profile.dividend_yield;
+        if (divVal !== null && divVal !== undefined) {
+            let num = Number(divVal);
+            if (num > 0 && num < 0.5) num = num * 100;
+            document.getElementById("kpiDivYield").textContent = `${num.toFixed(2)}%`;
+        } else {
+            document.getElementById("kpiDivYield").textContent = "0.00%";
+        }
+    }
+    if (document.getElementById("kpiBeta")) {
+        document.getElementById("kpiBeta").textContent = profile.beta ? Number(profile.beta).toFixed(2) : "1.00";
+    }
+
     // ETF Specific Handling
     const etfSection = document.getElementById("etfSpecificSection");
     const heroTypeBadge = document.getElementById("heroTypeBadge");
@@ -1297,9 +1324,248 @@ function initMobileTooltipSystem() {
     });
 }
 
+// ==========================================================================
+// Global Floating Tooltip for Desktop (Prevents any overflow clipping)
+// ==========================================================================
+function initGlobalDesktopTooltipSystem() {
+    const tooltip = document.getElementById("globalTooltip");
+    if (!tooltip) return;
+
+    let activeTip = null;
+
+    document.addEventListener("mouseover", (e) => {
+        const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window);
+        if (isMobile) return;
+
+        const tip = e.target.closest(".info-tip");
+        if (!tip) {
+            hideTooltip();
+            return;
+        }
+
+        const text = tip.getAttribute("data-tip");
+        if (!text) return;
+
+        activeTip = tip;
+        tooltip.textContent = text;
+        tooltip.classList.add("visible");
+
+        // Compute position using getBoundingClientRect
+        const rect = tip.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+
+        let top = rect.top - tooltipRect.height - 8;
+        if (top < 10) {
+            // Flip below if too close to viewport top
+            top = rect.bottom + 8;
+        }
+
+        let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+        // Clamp inside window boundaries with 12px margin
+        left = Math.max(12, Math.min(left, window.innerWidth - tooltipRect.width - 12));
+
+        tooltip.style.top = `${top}px`;
+        tooltip.style.left = `${left}px`;
+    });
+
+    document.addEventListener("mouseout", (e) => {
+        const tip = e.target.closest(".info-tip");
+        if (tip && tip === activeTip) {
+            hideTooltip();
+        }
+    });
+
+    window.addEventListener("scroll", hideTooltip, { passive: true });
+
+    function hideTooltip() {
+        if (tooltip && tooltip.classList.contains("visible")) {
+            tooltip.classList.remove("visible");
+            activeTip = null;
+        }
+    }
+}
+
+// ==========================================================================
+// AI Financial Analyst Drawer & Copilot System
+// ==========================================================================
+function initAiAnalystSystem() {
+    const openBtn = document.getElementById("openAiAnalystBtn");
+    const closeBtn = document.getElementById("closeAiAnalystBtn");
+    const overlay = document.getElementById("aiAnalystOverlay");
+    const chatFeed = document.getElementById("aiChatFeed");
+    const chatForm = document.getElementById("aiChatForm");
+    const chatInput = document.getElementById("aiChatInput");
+    const activeTickerEl = document.getElementById("aiActiveTicker");
+    const activePriceEl = document.getElementById("aiActivePrice");
+
+    let chatHistory = [];
+    let isRequestInProgress = false;
+
+    if (!overlay) return;
+
+    function openDrawer() {
+        overlay.classList.add("active");
+        overlay.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+        
+        // Update context with active analyzed stock
+        const activeT = (currentAnalysisData && currentAnalysisData.profile && currentAnalysisData.profile.ticker) || currentTicker || "AAPL";
+        const currentName = (currentAnalysisData && currentAnalysisData.profile && currentAnalysisData.profile.name) || "Apple Inc.";
+        const currentPrice = (currentAnalysisData && currentAnalysisData.profile && currentAnalysisData.profile.current_price) ? `$${Number(currentAnalysisData.profile.current_price).toFixed(2)}` : "$0.00";
+
+        if (activeTickerEl) activeTickerEl.textContent = `${activeT} (${currentName})`;
+        if (activePriceEl) activePriceEl.textContent = currentPrice;
+
+        setTimeout(() => {
+            if (chatInput) chatInput.focus();
+        }, 250);
+    }
+
+    function closeDrawer() {
+        overlay.classList.remove("active");
+        overlay.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+    }
+
+    if (openBtn) openBtn.addEventListener("click", openDrawer);
+    if (closeBtn) closeBtn.addEventListener("click", closeDrawer);
+
+    overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) closeDrawer();
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && overlay.classList.contains("active")) {
+            closeDrawer();
+        }
+    });
+
+    // Quick Chips click
+    document.querySelectorAll(".ai-prompt-chip").forEach(chip => {
+        chip.addEventListener("click", () => {
+            const q = chip.getAttribute("data-question");
+            if (q) submitQuestion(q);
+        });
+    });
+
+    // Form submit
+    if (chatForm) {
+        chatForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const q = chatInput.value.trim();
+            if (q) {
+                submitQuestion(q);
+                chatInput.value = "";
+            }
+        });
+    }
+
+    function formatMarkdown(text) {
+        if (!text) return "";
+        let formatted = text
+            .replace(/### (.*?)\n/g, '<div class="ai-msg-title">$1</div>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\* (.*?)\n/g, '<li>$1</li>');
+        
+        // Wrap lists
+        if (formatted.includes("<li>")) {
+            formatted = formatted.replace(/(<li>.*?<\/li>)+/gs, (match) => `<ul>${match}</ul>`);
+        }
+        return formatted.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+    }
+
+    async function submitQuestion(questionText) {
+        if (isRequestInProgress) return;
+        const ticker = (currentAnalysisData && currentAnalysisData.profile && currentAnalysisData.profile.ticker) || currentTicker || "AAPL";
+
+        // 1. Append User Message
+        appendMessage("user", questionText);
+        chatHistory.push({ role: "user", text: questionText });
+
+        // 2. Append Typing Indicator
+        const typingEl = document.createElement("div");
+        typingEl.className = "ai-msg ai-msg-bot";
+        typingEl.id = "aiTypingMsg";
+        typingEl.innerHTML = `
+            <div class="ai-msg-avatar">🤖</div>
+            <div class="ai-msg-bubble ai-typing">
+                <span class="ai-typing-dot"></span>
+                <span class="ai-typing-dot"></span>
+                <span class="ai-typing-dot"></span>
+            </div>
+        `;
+        chatFeed.appendChild(typingEl);
+        chatFeed.scrollTop = chatFeed.scrollHeight;
+
+        isRequestInProgress = true;
+
+        try {
+            const res = await fetch("/api/ai/ask", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ticker: ticker,
+                    question: questionText,
+                    history: chatHistory.slice(-4)
+                })
+            });
+            const data = await res.json();
+            
+            // Remove typing indicator
+            const tEl = document.getElementById("aiTypingMsg");
+            if (tEl) tEl.remove();
+
+            if (data.success && data.data && data.data.answer) {
+                const answerText = data.data.answer;
+                appendMessage("bot", answerText);
+                chatHistory.push({ role: "model", text: answerText });
+            } else {
+                appendMessage("bot", `מצטער, חלה שגיאה בעיבוד הנתונים: ${data.error || "נסה שנית מאוחר יותר."}`);
+            }
+        } catch (err) {
+            const tEl = document.getElementById("aiTypingMsg");
+            if (tEl) tEl.remove();
+            appendMessage("bot", `שגיאת תקשורת עם מנוע ה-AI: ${err.message || "בדוק את החיבור לרשת."}`);
+        } finally {
+            isRequestInProgress = false;
+        }
+    }
+
+    function appendMessage(role, rawContent) {
+        const msgEl = document.createElement("div");
+        msgEl.className = `ai-msg ai-msg-${role === "user" ? "user" : "bot"}`;
+        
+        if (role === "user") {
+            msgEl.innerHTML = `
+                <div class="ai-msg-avatar">👤</div>
+                <div class="ai-msg-bubble">${escapeHtml(rawContent)}</div>
+            `;
+        } else {
+            msgEl.innerHTML = `
+                <div class="ai-msg-avatar">🤖</div>
+                <div class="ai-msg-bubble">${formatMarkdown(rawContent)}</div>
+            `;
+        }
+        chatFeed.appendChild(msgEl);
+        chatFeed.scrollTop = chatFeed.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+    }
+}
+
 // Initialize on DOM load
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initMobileTooltipSystem);
-} else {
+function initAllSystems() {
     initMobileTooltipSystem();
+    initGlobalDesktopTooltipSystem();
+    initAiAnalystSystem();
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAllSystems);
+} else {
+    initAllSystems();
 }

@@ -23,6 +23,11 @@ class PortfolioItem(BaseModel):
 class PortfolioAnalyzeRequest(BaseModel):
     holdings: List[PortfolioItem]
 
+class AIAskRequest(BaseModel):
+    ticker: str
+    question: str
+    history: Optional[List[Dict[str, str]]] = None
+
 class ApiResponse(BaseModel):
     success: bool
     data: Optional[Dict[str, Any]] = None

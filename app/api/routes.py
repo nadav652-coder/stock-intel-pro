@@ -8,7 +8,8 @@ from pathlib import Path
 from typing import Dict, Any, List
 from app.api.service import analysis_service
 from app.engines.search_resolver import SearchResolver
-from app.api.schemas import DCFSimulationRequest, QuickSearchItem, ApiResponse, PortfolioAnalyzeRequest
+from app.engines.ai_analyst import AIAnalystEngine
+from app.api.schemas import DCFSimulationRequest, QuickSearchItem, ApiResponse, PortfolioAnalyzeRequest, AIAskRequest
 
 router = APIRouter()
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "web" / "templates"
@@ -87,6 +88,26 @@ async def analyze_portfolio_endpoint(request: PortfolioAnalyzeRequest):
         import traceback
         traceback.print_exc()
         return ApiResponse(success=False, error=f"שגיאה בניתוח התיק: {str(e)}")
+
+@router.post("/api/ai/ask", response_model=ApiResponse)
+async def ask_ai_analyst(request: AIAskRequest):
+    ticker = request.ticker.upper().strip()
+    question = request.question.strip()
+    if not ticker or not question:
+        raise HTTPException(status_code=400, detail="נדרש סימול מניה ושאלה תקינה")
+    try:
+        stock_data = analysis_service.run_full_analysis(ticker)
+        res = AIAnalystEngine.ask(
+            ticker=ticker,
+            question=question,
+            data=stock_data,
+            history=request.history
+        )
+        return ApiResponse(success=True, data=res)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return ApiResponse(success=False, error=f"שגיאה במענה ה-AI: {str(e)}")
 
 @router.get("/api/search")
 async def search_tickers(q: str = Query("", min_length=0)):

@@ -11,7 +11,7 @@
     <!-- Plotly.js for Institutional Charts -->
     <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="/static/css/style.css?v=5.0">
+    <link rel="stylesheet" href="/static/css/style.css?v=5.3">
 </head>
 <body>
 
@@ -22,21 +22,29 @@
         <div id="loadingSubtext" class="loading-subtext">שולף נתונים ומריץ סימולציות...</div>
     </div>
 
-    <!-- Header & Navigation Bar -->
+    <!-- Header & Financial Terminal Navbar -->
     <header>
         <div class="container header-content">
             <div class="logo-area">
-                <div class="logo-icon">📈</div>
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                        <polyline points="16 7 22 7 22 13"></polyline>
+                    </svg>
+                </div>
                 <div>
-                    <div class="logo-title">StockIntel Pro</div>
-                    <div class="logo-subtitle">מערכת חכמה לניתוח מניות, קרנות סל (ETFs) ותיקי השקעות</div>
+                    <div class="logo-title">
+                        STOCKINTEL
+                        <span class="terminal-badge">PRO TERMINAL</span>
+                    </div>
+                    <div class="logo-subtitle">מערכת מחקר כמותי, תמחור מוסדי ודוחות SEC מבוקרים</div>
                 </div>
             </div>
 
-            <!-- Top View Switcher (Stock Analysis vs Portfolio Tracker) -->
+            <!-- Top View Switcher (Segmented Control) -->
             <div class="main-nav-switcher">
                 <button id="navBtnStock" class="main-nav-btn active">
-                    <span>🔍</span> ניתוח מניות וקרנות
+                    <span>📊</span> ניתוח מניות וקרנות
                 </button>
                 <button id="navBtnPortfolio" class="main-nav-btn">
                     <span>💼</span> תיק השקעות אישי
@@ -46,8 +54,11 @@
             <!-- Search Area (Only visible in stock/etf view) -->
             <div id="headerSearchArea" class="search-container">
                 <div class="search-input-wrapper">
-                    <input type="text" id="tickerInput" class="search-input" placeholder="חפש חופשי: אפל, שבבים, דיבידנד, QQQ, Palantir..." value="AAPL" autocomplete="off">
-                    <button id="searchBtn" class="search-btn">ניתוח</button>
+                    <input type="text" id="tickerInput" class="search-input" placeholder="הקלד סימול או שם: AAPL, NVDA, QQQ, טסלה..." value="AAPL" autocomplete="off">
+                    <button id="searchBtn" class="search-btn">
+                        <span>ניתוח</span>
+                        <kbd style="font-size:10px; opacity:0.8; font-family:'JetBrains Mono';">↵</kbd>
+                    </button>
                 </div>
                 <!-- Autocomplete Floating Dropdown -->
                 <div id="searchDropdown" class="search-dropdown" style="display: none;"></div>
@@ -55,7 +66,7 @@
 
             <!-- Quick Pills -->
             <div id="headerPillsArea" class="quick-pills">
-                <span style="font-size: 13px; color: var(--text-muted);">מובילות:</span>
+                <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">מובילות:</span>
                 <button class="pill-btn active" data-ticker="AAPL">AAPL</button>
                 <button class="pill-btn" data-ticker="NVDA">NVDA</button>
                 <button class="pill-btn" data-ticker="MSFT">MSFT</button>
@@ -63,6 +74,17 @@
                 <button class="pill-btn" data-ticker="QQQ">QQQ (נאסד"ק)</button>
                 <button class="pill-btn" data-ticker="SPY">SPY (S&P)</button>
                 <button class="pill-btn" data-ticker="SCHD">SCHD (דיבידנד)</button>
+            </div>
+        </div>
+
+        <!-- Terminal Market Ticker Tape -->
+        <div class="market-ticker-tape">
+            <div class="container tape-inner">
+                <div class="tape-item"><span class="tape-label">S&P 500</span> <span class="tape-val mono c-emerald">5,916.98 (+0.40%)</span></div>
+                <div class="tape-item"><span class="tape-label">NASDAQ 100</span> <span class="tape-val mono c-emerald">18,987.40 (+0.63%)</span></div>
+                <div class="tape-item"><span class="tape-label">US 10Y YIELD</span> <span class="tape-val mono">4.42%</span></div>
+                <div class="tape-item"><span class="tape-label">מדד VIX</span> <span class="tape-val mono c-emerald">14.24 (יציב)</span></div>
+                <div class="tape-item live-pulse"><span class="pulse-dot"></span> <span class="tape-label">SEC EDGAR API: מקושר מבוקר</span></div>
             </div>
         </div>
     </header>
@@ -73,7 +95,7 @@
              VIEW 1: STOCK & ETF ANALYZER VIEW
              ==================================================================== -->
         <div id="stockViewContainer">
-            <!-- Hero Company/ETF Profile -->
+            <!-- Hero Company/ETF Profile - Terminal Header -->
             <section class="hero-card">
                 <div class="hero-header">
                     <div class="company-title-wrap">
@@ -81,7 +103,7 @@
                         <div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <h1 id="heroName" class="company-name">Apple Inc.</h1>
-                                <span id="heroTypeBadge" class="meta-chip" style="background: rgba(59,130,246,0.2); color:#93C5FD; font-weight:700;">מניה רגילה</span>
+                                <span id="heroTypeBadge" class="meta-chip" style="background: rgba(56,189,248,0.12); color:#38BDF8; font-weight:700; border-color: rgba(56,189,248,0.3);">מניה רגילה</span>
                             </div>
                             <div class="company-meta">
                                 <span id="heroSector" class="meta-chip">טכנולוגיה</span>
@@ -93,19 +115,48 @@
                     </div>
 
                     <div class="price-hero-area">
-                        <div style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center;">מחיר נוכחי <span class="info-tip" data-tip="המחיר העדכני של המניה או קרן הסל בזמן אמת בדולרים (USD) לפי שער הנעילה או העסקה האחרונה.">?</span></div>
-                        <div>
+                        <div style="font-size: 12px; color: var(--text-muted); display: flex; align-items: center; justify-content: flex-end; gap: 4px;">
+                            <span>מחיר שוק עדכני</span>
+                            <span class="info-tip" data-tip="המחיר העדכני של המניה או קרן הסל בזמן אמת בדולרים (USD) לפי שער הנעילה או העסקה האחרונה.">?</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 6px; justify-content: flex-end;">
                             <span id="heroPrice" class="price-large">$0.00</span>
                             <span class="price-currency">USD</span>
                         </div>
-                        <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button id="openReportsModalBtn" class="pill-btn highlight-btn" style="background: linear-gradient(135deg, rgba(59,130,246,0.25) 0%, rgba(16,185,129,0.25) 100%); border-color: #3B82F6; color: #FFFFFF; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                                📑 דוחות כספיים מתורגמים וסעיפי מפתח (10-K)
+                        <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
+                            <button id="openReportsModalBtn" class="pill-btn highlight-btn" style="background: #151F30; border-color: rgba(56,189,248,0.4); color: #38BDF8; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                <span>דוחות כספיים מתורגמים (10-K)</span>
                             </button>
-                            <a id="secFilingBtn" href="#" target="_blank" rel="noopener noreferrer" class="pill-btn" style="color: #93C5FD; border-color: rgba(59,130,246,0.4);">
-                                📄 צפה ב-SEC EDGAR
+                            <a id="secFilingBtn" href="#" target="_blank" rel="noopener noreferrer" class="pill-btn" style="color: var(--text-secondary); border-color: var(--border-color); display: inline-flex; align-items: center; gap: 4px;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                <span>SEC EDGAR</span>
                             </a>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Quick KPI Strip -->
+                <div class="hero-kpi-bar">
+                    <div class="kpi-cell">
+                        <span class="kpi-label">שווי שוק <span class="info-tip" data-tip="שווי השוק של החברה (Market Cap) לפי מחיר אחרון ומספר מניות.">?</span></span>
+                        <span id="kpiMarketCap" class="kpi-value mono">—</span>
+                    </div>
+                    <div class="kpi-cell">
+                        <span class="kpi-label">טווח 52 שבועות <span class="info-tip" data-tip="מחיר הנמוך ביותר והגבוה ביותר של המניה בשנה האחרונה.">?</span></span>
+                        <span id="kpiFiftyTwoWeek" class="kpi-value mono">—</span>
+                    </div>
+                    <div class="kpi-cell">
+                        <span class="kpi-label">מכפיל רווח (P/E) <span class="info-tip" data-tip="מכפיל הרווח מחושב מתוך הדוחות המבוקרים.">?</span></span>
+                        <span id="kpiPE" class="kpi-value mono">—</span>
+                    </div>
+                    <div class="kpi-cell">
+                        <span class="kpi-label">תשואת דיבידנד <span class="info-tip" data-tip="אחוז הדיבידנד השנתי מתוך מחיר המניה.">?</span></span>
+                        <span id="kpiDivYield" class="kpi-value mono">—</span>
+                    </div>
+                    <div class="kpi-cell">
+                        <span class="kpi-label">בטא (Beta) <span class="info-tip" data-tip="מדד תנודתיות וסיכון מול מדד S&P 500.">?</span></span>
+                        <span id="kpiBeta" class="kpi-value mono">—</span>
                     </div>
                 </div>
 
@@ -717,6 +768,100 @@
         </div>
     </div>
 
+    <!-- Global Floating Tooltip on Desktop (Eliminates all parent container clipping) -->
+    <div id="globalTooltip" class="global-floating-tooltip" aria-hidden="true"></div>
+
+    <!-- AI Financial Analyst Floating Action Button -->
+    <button id="openAiAnalystBtn" class="ai-analyst-floating-btn" aria-label="שאל את אנליסט ה-AI">
+        <div class="ai-btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                <circle cx="9" cy="10" r="1"></circle>
+                <circle cx="12" cy="10" r="1"></circle>
+                <circle cx="15" cy="10" r="1"></circle>
+            </svg>
+        </div>
+        <div class="ai-btn-text">
+            <span class="ai-btn-title">שאל את האנליסט</span>
+            <span class="ai-btn-badge">AI COPILOT</span>
+        </div>
+        <span class="ai-pulse-dot" title="מחובר ומנתח בזמן אמת"></span>
+    </button>
+
+    <!-- AI Financial Analyst Drawer & Modal -->
+    <div id="aiAnalystOverlay" class="ai-analyst-overlay" aria-hidden="true">
+        <div class="ai-analyst-drawer" role="dialog" aria-modal="true" aria-labelledby="aiAnalystTitle">
+            <!-- Drawer Header -->
+            <div class="ai-drawer-header">
+                <div class="ai-header-left">
+                    <div class="ai-avatar-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="ai-title-row">
+                            <h3 id="aiAnalystTitle" class="ai-title">אנליסט מחקר כמותי</h3>
+                            <span class="terminal-badge">AI COPILOT</span>
+                        </div>
+                        <div class="ai-subtitle">ניתוח דוחות SEC, תמחור והערכת סיכונים בזמן אמת</div>
+                    </div>
+                </div>
+                <button id="closeAiAnalystBtn" class="ai-close-btn" aria-label="סגור חלון אנליסט">✕</button>
+            </div>
+
+            <!-- Active Asset Context Banner -->
+            <div class="ai-asset-strip">
+                <span class="ai-asset-tag">נכס נבדק:</span>
+                <span id="aiActiveTicker" class="ai-asset-name mono">AAPL (Apple Inc.)</span>
+                <span id="aiActivePrice" class="ai-asset-price mono">$0.00</span>
+            </div>
+
+            <!-- Quick Questions Bar -->
+            <div class="ai-quick-prompts">
+                <span class="ai-prompts-label">שאלות מפתח מומלצות:</span>
+                <div class="ai-chips-wrap">
+                    <button class="ai-prompt-chip" data-question="מה היתרונות והחסרונות העיקריים של המניה כרגע?">🎯 יתרונות וחסרונות</button>
+                    <button class="ai-prompt-chip" data-question="האם המניה נחשבת כרגע יקרה או זולה ביחס למדד ולענף?">⚖️ תמחור מול השוק</button>
+                    <button class="ai-prompt-chip" data-question="אילו גורמי סיכון מהותיים החברה דיווחה בדוח ה-SEC האחרון?">⚠️ גורמי סיכון ב-10-K</button>
+                    <button class="ai-prompt-chip" data-question="הסבר לי את הערכת השווי DCF ושולי הביטחון במילים פשוטות">📈 מודל DCF בפשטות</button>
+                    <button class="ai-prompt-chip" data-question="מה משקף ציון ה-Piotroski ומדד אלטמן של החברה?">🛡️ איתנות מאזן ופיוטרוסקי</button>
+                </div>
+            </div>
+
+            <!-- Chat Messages Container -->
+            <div id="aiChatFeed" class="ai-chat-feed">
+                <!-- Welcome Message -->
+                <div class="ai-msg ai-msg-bot">
+                    <div class="ai-msg-avatar">🤖</div>
+                    <div class="ai-msg-bubble">
+                        <div class="ai-msg-title">שלום! אני האנליסט הכמותי של StockIntel Pro.</div>
+                        <div class="ai-msg-text">
+                            אני מסתמך ישירות על הדוחות הכספיים המבוקרים של החברה ברשות ניירות ערך (SEC), מכפילי השוק ההיסטוריים ומודל הערכת השווי DCF.
+                            <br><br>
+                            בחר אחת משאלות המפתח המהירות למעלה, או שאל אותי כל שאלה חופשית על החברה, התמחור או הסיכונים שלה!
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Bar -->
+            <div class="ai-input-area">
+                <form id="aiChatForm" class="ai-input-form">
+                    <input type="text" id="aiChatInput" class="ai-chat-input" placeholder="שאל שאלה: למה המכפיל גבוה? מה החוב? האם מומלץ למשקיע ערך?..." autocomplete="off">
+                    <button type="submit" id="aiSendBtn" class="ai-send-btn" aria-label="שלח שאלה">
+                        <span>שלח</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Explanation Bottom Sheet Modal -->
     <div id="mobileTipModal" class="mobile-tip-overlay" aria-hidden="true">
         <div class="mobile-tip-sheet" role="dialog" aria-modal="true" aria-labelledby="mobileTipTitle">
@@ -747,6 +892,6 @@
     </footer>
 
     <!-- Client Script -->
-    <script src="/static/js/app.js?v=5.0"></script>
+    <script src="/static/js/app.js?v=5.3"></script>
 </body>
 </html>
