@@ -35,6 +35,9 @@ class AnalysisService:
         raw_info = financials.get("raw_info", {})
         combined_info = {**raw_info, **profile}
 
+        # Enrich missing fundamental and statement metrics with official SEC audited XBRL facts (100% cloud resilient)
+        self.sec.enrich_analysis_data(ticker, profile, combined_info, financials)
+
         # Price histories
         stock_df = self.provider.get_historical_prices(ticker, period="5y")
         benchmark_df = self.provider.get_benchmark_prices(period="5y")

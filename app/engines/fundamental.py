@@ -18,16 +18,27 @@ class FundamentalEngine:
         # Extract Key Raw Metrics
         pe = info.get("trailingPE")
         forward_pe = info.get("forwardPE")
+        revenue_growth = info.get("revenueGrowth")
+        earnings_growth = info.get("earningsGrowth")
+
+        # Intelligent forward P/E estimation if consensus forecast is absent
+        if forward_pe is None and pe is not None:
+            growth_factor = earnings_growth if earnings_growth is not None else (revenue_growth if revenue_growth is not None else 0.10)
+            clamped_growth = min(max(growth_factor, -0.15), 0.40)
+            forward_pe = round(pe / (1.0 + clamped_growth), 2)
+
         peg = info.get("pegRatio")
+        if peg is None and pe is not None:
+            growth_pct = earnings_growth if earnings_growth is not None else revenue_growth
+            if growth_pct and growth_pct > 0:
+                peg = round(pe / (growth_pct * 100.0), 2)
+
         price_to_book = info.get("priceToBook")
         ev_to_ebitda = info.get("enterpriseToEbitda")
         
         profit_margin = info.get("profitMargins")
         operating_margin = info.get("operatingMargins")
         gross_margin = info.get("grossMargins")
-        
-        revenue_growth = info.get("revenueGrowth")
-        earnings_growth = info.get("earningsGrowth")
         roe = info.get("returnOnEquity")
         roa = info.get("returnOnAssets")
         

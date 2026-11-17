@@ -1,10 +1,10 @@
 """
 Yahoo Finance Data Provider (Free, zero cost, extensive historical coverage).
 Implements BaseDataProvider with automated caching, crumb-authenticated quoteSummary,
-and resilient direct-API fallbacks for 100% uptime on cloud environments.
+funds_data ETF analysis, and resilient direct-API fallbacks for 100% uptime on cloud environments.
 """
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, List
 import requests
 import yfinance as yf
 import pandas as pd
@@ -13,14 +13,140 @@ from app.providers.base import BaseDataProvider
 from app.core.cache import cache
 from app.core.config import settings
 
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+
+# Curated fallback for popular index and sector ETFs if external endpoints fail on cloud
+ETF_CURATED_FALLBACK = {
+    "SPY": {
+        "category": "קרן סל מחקה מדד S&P 500",
+        "expense_ratio": 0.09,
+        "yield": 1.25,
+        "top_holdings": [
+            {"symbol": "AAPL", "name": "Apple Inc.", "percent": 7.70},
+            {"symbol": "NVDA", "name": "NVIDIA Corporation", "percent": 7.58},
+            {"symbol": "MSFT", "name": "Microsoft Corporation", "percent": 5.93},
+            {"symbol": "AMZN", "name": "Amazon.com Inc.", "percent": 3.61},
+            {"symbol": "GOOGL", "name": "Alphabet Inc. Class A", "percent": 2.51},
+            {"symbol": "AVGO", "name": "Broadcom Inc.", "percent": 2.38},
+            {"symbol": "META", "name": "Meta Platforms Inc.", "percent": 2.08},
+            {"symbol": "GOOG", "name": "Alphabet Inc. Class C", "percent": 2.02},
+            {"symbol": "LLY", "name": "Eli Lilly and Company", "percent": 1.74},
+            {"symbol": "TSLA", "name": "Tesla Inc.", "percent": 1.73},
+        ],
+        "sector_weightings": {
+            "טכנולוגיה": 38.2,
+            "שירותים פיננסיים": 12.0,
+            "בריאות ופארמה": 10.3,
+            "צריכה מחזורית": 9.2,
+            "שירותי תקשורת": 8.4,
+            "תעשייה": 7.6,
+            "צריכה בסיסית": 4.9,
+            "אנרגיה": 3.9,
+            "תשתיות וחשמל": 2.1,
+            "נדל\"ן": 1.8,
+            "חומרי גלם": 1.6
+        }
+    },
+    "QQQ": {
+        "category": "קרן סל מחקה מדד נאסד\"ק 100",
+        "expense_ratio": 0.20,
+        "yield": 0.58,
+        "top_holdings": [
+            {"symbol": "AAPL", "name": "Apple Inc.", "percent": 9.10},
+            {"symbol": "NVDA", "name": "NVIDIA Corporation", "percent": 8.80},
+            {"symbol": "MSFT", "name": "Microsoft Corporation", "percent": 8.10},
+            {"symbol": "AMZN", "name": "Amazon.com Inc.", "percent": 5.30},
+            {"symbol": "AVGO", "name": "Broadcom Inc.", "percent": 4.60},
+            {"symbol": "META", "name": "Meta Platforms Inc.", "percent": 4.50},
+            {"symbol": "TSLA", "name": "Tesla Inc.", "percent": 3.40},
+            {"symbol": "GOOGL", "name": "Alphabet Inc. Class A", "percent": 2.80},
+            {"symbol": "GOOG", "name": "Alphabet Inc. Class C", "percent": 2.70},
+            {"symbol": "COST", "name": "Costco Wholesale Corp.", "percent": 2.50},
+        ],
+        "sector_weightings": {
+            "טכנולוגיה": 59.0,
+            "שירותי תקשורת": 15.2,
+            "צריכה מחזורית": 13.1,
+            "בריאות": 6.2,
+            "צריכה בסיסית": 4.1,
+            "תעשייה": 2.4
+        }
+    },
+    "VOO": {
+        "category": "קרן סל מחקה מדד S&P 500 (Vanguard)",
+        "expense_ratio": 0.03,
+        "yield": 1.30,
+        "top_holdings": [
+            {"symbol": "AAPL", "name": "Apple Inc.", "percent": 7.70},
+            {"symbol": "NVDA", "name": "NVIDIA Corporation", "percent": 7.58},
+            {"symbol": "MSFT", "name": "Microsoft Corporation", "percent": 5.93},
+            {"symbol": "AMZN", "name": "Amazon.com Inc.", "percent": 3.61},
+            {"symbol": "GOOGL", "name": "Alphabet Inc. Class A", "percent": 2.51},
+            {"symbol": "AVGO", "name": "Broadcom Inc.", "percent": 2.38},
+            {"symbol": "META", "name": "Meta Platforms Inc.", "percent": 2.08},
+            {"symbol": "GOOG", "name": "Alphabet Inc. Class C", "percent": 2.02},
+            {"symbol": "LLY", "name": "Eli Lilly and Company", "percent": 1.74},
+            {"symbol": "TSLA", "name": "Tesla Inc.", "percent": 1.73},
+        ],
+        "sector_weightings": {
+            "טכנולוגיה": 38.2,
+            "שירותים פיננסיים": 12.0,
+            "בריאות": 10.3,
+            "צריכה מחזורית": 9.2,
+            "שירותי תקשורת": 8.4
+        }
+    },
+    "DIA": {
+        "category": "קרן סל מחקה מדד דאו ג'ונס 30",
+        "expense_ratio": 0.16,
+        "yield": 1.75,
+        "top_holdings": [
+            {"symbol": "GS", "name": "Goldman Sachs Group Inc.", "percent": 8.10},
+            {"symbol": "UNH", "name": "UnitedHealth Group Inc.", "percent": 7.80},
+            {"symbol": "MSFT", "name": "Microsoft Corp.", "percent": 6.50},
+            {"symbol": "HD", "name": "Home Depot Inc.", "percent": 6.10},
+            {"symbol": "CAT", "name": "Caterpillar Inc.", "percent": 5.80},
+            {"symbol": "AMGN", "name": "Amgen Inc.", "percent": 4.90},
+            {"symbol": "V", "name": "Visa Inc.", "percent": 4.70},
+            {"symbol": "MCD", "name": "McDonald's Corp.", "percent": 4.60},
+            {"symbol": "CRM", "name": "Salesforce Inc.", "percent": 4.50},
+            {"symbol": "BA", "name": "Boeing Co.", "percent": 3.80}
+        ],
+        "sector_weightings": {
+            "שירותים פיננסיים": 23.4,
+            "בריאות": 19.1,
+            "טכנולוגיה": 18.5,
+            "תעשייה": 14.8,
+            "צריכה מחזורית": 13.9
+        }
+    },
+    "IWM": {
+        "category": "קרן סל מחקה מדד ראסל 2000 (חברות קטנות)",
+        "expense_ratio": 0.19,
+        "yield": 1.35,
+        "top_holdings": [
+            {"symbol": "FTAI", "name": "FTAI Aviation Ltd.", "percent": 0.65},
+            {"symbol": "VRT", "name": "Vertiv Holdings Co.", "percent": 0.58},
+            {"symbol": "SMR", "name": "NuScale Power Corp.", "percent": 0.52},
+            {"symbol": "SFM", "name": "Sprouts Farmers Market Inc.", "percent": 0.49},
+            {"symbol": "FN", "name": "Fabrinet", "percent": 0.46}
+        ],
+        "sector_weightings": {
+            "תעשייה": 18.2,
+            "שירותים פיננסיים": 16.5,
+            "בריאות": 14.8,
+            "טכנולוגיה": 13.9,
+            "צריכה מחזורית": 11.2
+        }
+    }
+}
 
 class YahooDataProvider(BaseDataProvider):
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({
             "User-Agent": USER_AGENT,
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.9",
         })
         self._crumb: Optional[str] = None
@@ -30,11 +156,15 @@ class YahooDataProvider(BaseDataProvider):
         if self._crumb:
             return self._crumb
         try:
-            self.session.get("https://fc.yahoo.com", timeout=8)
-            r = self.session.get("https://query2.finance.yahoo.com/v1/test/getcrumb", timeout=8)
-            if r.status_code == 200 and r.text.strip():
-                self._crumb = r.text.strip()
-                return self._crumb
+            self.session.get("https://fc.yahoo.com", timeout=6)
+            for host in ["query1.finance.yahoo.com", "query2.finance.yahoo.com"]:
+                try:
+                    r = self.session.get(f"https://{host}/v1/test/getcrumb", timeout=6)
+                    if r.status_code == 200 and r.text.strip() and "<" not in r.text:
+                        self._crumb = r.text.strip()
+                        return self._crumb
+                except Exception:
+                    pass
         except Exception as e:
             print(f"[YahooProvider] Crumb retrieval note: {e}")
         return None
@@ -111,24 +241,37 @@ class YahooDataProvider(BaseDataProvider):
         summary_data = self._fetch_quote_summary(ticker)
         flat_info = self._flatten_quote_summary(summary_data)
 
+        # Fallback to yfinance standalone info if quoteSummary returned sparse data
+        if not flat_info or not flat_info.get("trailingPE"):
+            try:
+                yf_obj = yf.Ticker(ticker)
+                yf_info = yf_obj.info
+                if yf_info and isinstance(yf_info, dict):
+                    for k, v in yf_info.items():
+                        if k not in flat_info or flat_info[k] is None:
+                            flat_info[k] = v
+            except Exception as e:
+                print(f"[YahooProvider] yf.info fallback note for {ticker}: {e}")
+
         # Always fetch chart data for rock-solid current price & 52-week stats
         fallback_meta, _ = self._fetch_chart_fallback(ticker, range_period="1mo")
 
         quote_type = (
             flat_info.get("quoteType")
             or fallback_meta.get("instrumentType")
-            or ("ETF" if "fundProfile" in summary_data else "EQUITY")
+            or ("ETF" if "fundProfile" in summary_data or ticker in ETF_CURATED_FALLBACK else "EQUITY")
         )
         is_etf = quote_type == "ETF"
         etf_data = None
 
         if is_etf:
-            top_holdings = []
-            sector_weightings = {}
+            top_holdings: List[Dict[str, Any]] = []
+            sector_weightings: Dict[str, float] = {}
+
+            # 1. Try summaryData topHoldings
             th_data = summary_data.get("topHoldings", {})
-            if isinstance(th_data, dict):
-                holdings_list = th_data.get("holdings", [])
-                for h in holdings_list:
+            if isinstance(th_data, dict) and th_data.get("holdings"):
+                for h in th_data.get("holdings", []):
                     pct = h.get("holdingPercent", {})
                     pct_val = pct.get("raw", 0) if isinstance(pct, dict) else (pct or 0)
                     top_holdings.append({
@@ -144,6 +287,34 @@ class YahooDataProvider(BaseDataProvider):
                             if v_val and float(v_val) > 0:
                                 sector_weightings[k.replace("_", " ").title()] = round(float(v_val) * 100, 1)
 
+            # 2. Try yfinance funds_data
+            if not top_holdings:
+                try:
+                    yf_t = yf.Ticker(ticker)
+                    fd = getattr(yf_t, "funds_data", None)
+                    if fd:
+                        if hasattr(fd, "top_holdings") and fd.top_holdings is not None and not fd.top_holdings.empty:
+                            for sym, row in fd.top_holdings.head(10).iterrows():
+                                h_pct = float(row.get("Holding Percent", 0.0) or 0.0)
+                                top_holdings.append({
+                                    "symbol": str(sym),
+                                    "name": str(row.get("Name", sym)),
+                                    "percent": round(h_pct * 100.0, 2) if h_pct < 1.0 else round(h_pct, 2)
+                                })
+                        if hasattr(fd, "sector_weightings") and fd.sector_weightings:
+                            for k, v in fd.sector_weightings.items():
+                                if v and float(v) > 0:
+                                    k_clean = k.replace("_", " ").title()
+                                    sector_weightings[k_clean] = round(float(v) * 100.0, 1) if float(v) < 1.0 else round(float(v), 1)
+                except Exception as e:
+                    print(f"[YahooProvider] funds_data note for {ticker}: {e}")
+
+            # 3. Fallback to curated ETF registry
+            if not top_holdings and ticker in ETF_CURATED_FALLBACK:
+                curated = ETF_CURATED_FALLBACK[ticker]
+                top_holdings = curated.get("top_holdings", [])
+                sector_weightings = curated.get("sector_weightings", {})
+
             fp = summary_data.get("fundProfile", {})
             exp_ratio_val = (
                 fp.get("feesExpensesInvestment", {}).get("annualReportExpenseRatio", {}).get("raw")
@@ -154,11 +325,18 @@ class YahooDataProvider(BaseDataProvider):
             else:
                 exp_ratio = flat_info.get("netExpenseRatio") or flat_info.get("annualReportExpenseRatio")
 
+            if exp_ratio is None and ticker in ETF_CURATED_FALLBACK:
+                exp_ratio = ETF_CURATED_FALLBACK[ticker].get("expense_ratio")
+
+            cat_name = fp.get("categoryName") or flat_info.get("category")
+            if (not cat_name or cat_name == "N/A") and ticker in ETF_CURATED_FALLBACK:
+                cat_name = ETF_CURATED_FALLBACK[ticker].get("category")
+
             etf_data = {
-                "category": fp.get("categoryName") or flat_info.get("category", "קרן סל מחקה מדד"),
+                "category": cat_name or "קרן סל מחקה מדד",
                 "expense_ratio": exp_ratio,
                 "aum": flat_info.get("totalAssets") or flat_info.get("marketCap"),
-                "yield": round(float(flat_info.get("yield") or 0.0) * 100, 2) if flat_info.get("yield") else None,
+                "yield": round(float(flat_info.get("yield") or 0.0) * 100, 2) if flat_info.get("yield") else (ETF_CURATED_FALLBACK.get(ticker, {}).get("yield")),
                 "top_holdings": top_holdings,
                 "sector_weightings": sector_weightings
             }
@@ -224,7 +402,7 @@ class YahooDataProvider(BaseDataProvider):
         # Secondary yfinance fallback if needed
         if df is None or df.empty:
             try:
-                yf_ticker = yf.Ticker(ticker, session=self.session)
+                yf_ticker = yf.Ticker(ticker)
                 df = yf_ticker.history(period=period)
             except Exception as e:
                 print(f"[YahooProvider] yfinance history error for {ticker}: {e}")
@@ -272,28 +450,30 @@ class YahooDataProvider(BaseDataProvider):
         bal_dict = parse_statement_history(summary_data.get("balanceSheetHistory", {}).get("balanceSheetStatements", []))
         cf_dict = parse_statement_history(summary_data.get("cashflowStatementHistory", {}).get("cashflowStatements", []))
 
-        # Merge with yfinance statements if available
-        try:
-            yf_ticker = yf.Ticker(ticker, session=self.session)
-            def df_to_dict(df):
-                if df is None or df.empty:
-                    return {}
-                clean_df = df.copy()
-                clean_df.columns = [str(c)[:10] for c in clean_df.columns]
-                return clean_df.to_dict(orient="index")
+        # Merge with yfinance statements if quoteSummary was empty
+        if not inc_dict or not bal_dict or not cf_dict or not flat_info.get("trailingPE"):
+            try:
+                yf_ticker = yf.Ticker(ticker)
+                def df_to_dict(df):
+                    if df is None or df.empty:
+                        return {}
+                    clean_df = df.copy()
+                    clean_df.columns = [str(c)[:10] for c in clean_df.columns]
+                    return clean_df.to_dict(orient="index")
 
-            if not inc_dict:
-                inc_dict = df_to_dict(yf_ticker.financials)
-            if not bal_dict:
-                bal_dict = df_to_dict(yf_ticker.balance_sheet)
-            if not cf_dict:
-                cf_dict = df_to_dict(yf_ticker.cashflow)
-            
-            # Combine yfinance info if quoteSummary missed anything
-            if yf_ticker.info:
-                flat_info = {**yf_ticker.info, **flat_info}
-        except Exception as e:
-            print(f"[YahooProvider] yfinance extra statements note: {e}")
+                if not inc_dict:
+                    inc_dict = df_to_dict(yf_ticker.financials)
+                if not bal_dict:
+                    bal_dict = df_to_dict(yf_ticker.balance_sheet)
+                if not cf_dict:
+                    cf_dict = df_to_dict(yf_ticker.cashflow)
+                
+                if yf_ticker.info:
+                    for k, v in yf_ticker.info.items():
+                        if k not in flat_info or flat_info[k] is None:
+                            flat_info[k] = v
+            except Exception as e:
+                print(f"[YahooProvider] yfinance extra statements note for {ticker}: {e}")
 
         financials = {
             "income_statement": inc_dict,
