@@ -11,7 +11,7 @@
     <!-- Plotly.js for Institutional Charts -->
     <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="/static/css/style.css?v=4.2">
+    <link rel="stylesheet" href="/static/css/style.css?v=4.3">
 </head>
 <body>
 
@@ -717,6 +717,26 @@
         </div>
     </div>
 
+    <!-- Mobile Explanation Bottom Sheet Modal -->
+    <div id="mobileTipModal" class="mobile-tip-overlay" aria-hidden="true">
+        <div class="mobile-tip-sheet" role="dialog" aria-modal="true" aria-labelledby="mobileTipTitle">
+            <div class="mobile-tip-drag-handle"></div>
+            <div class="mobile-tip-header">
+                <div class="mobile-tip-title-wrap">
+                    <span class="mobile-tip-icon">💡</span>
+                    <h3 id="mobileTipTitle" class="mobile-tip-title">הסבר מונח</h3>
+                </div>
+                <button id="closeMobileTipBtn" class="mobile-tip-close" aria-label="סגור חלון הסבר">✕</button>
+            </div>
+            <div id="mobileTipBody" class="mobile-tip-body">
+                תוכן ההסבר יופיע כאן.
+            </div>
+            <div class="mobile-tip-footer">
+                <button id="dismissMobileTipBtn" class="mobile-tip-action-btn">הבנתי, תודה 👍</button>
+            </div>
+        </div>
+    </div>
+
     <footer>
         <div class="container">
             <div>StockIntel Pro &copy; 2026 | מערכת חכמה לניתוח מניות, קרנות סל (ETFs) ותיקי השקעות</div>
@@ -727,6 +747,6 @@
     </footer>
 
     <!-- Client Script -->
-    <script src="/static/js/app.js?v=4.2"></script>
+    <script src="/static/js/app.js?v=4.3"></script>
 </body>
 </html>
