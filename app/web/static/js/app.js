@@ -651,13 +651,13 @@ function renderSensitivityMatrix(sens) {
     const tableBody = document.getElementById("sensitivityBody");
     if (!tableHead || !tableBody) return;
 
-    tableHead.innerHTML = `<tr><th>קצב צמיחה \\ WACC</th>` + sens.wacc_headers.map(w => `<th class="latin">${w}</th>`).join("") + `</tr>`;
+    tableHead.innerHTML = `<tr><th style="text-align:right;">קצב צמיחה \\ WACC</th>` + sens.wacc_headers.map(w => `<th style="text-align:center;"><span class="latin">${w}</span></th>`).join("") + `</tr>`;
     
     tableBody.innerHTML = "";
     sens.matrix.forEach(row => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td style="font-weight:700;" class="latin">${row.growth}%</td>` + row.values.map(v => {
-            return `<td class="latin">${v !== null ? `$${v}` : '—'}</td>`;
+        tr.innerHTML = `<td style="font-weight:700; text-align:right;"><span class="latin">${row.growth}%</span></td>` + row.values.map(v => {
+            return `<td style="text-align:center;"><span class="latin">${v !== null ? `$${v}` : '—'}</span></td>`;
         }).join("");
         tableBody.appendChild(tr);
     });
@@ -727,13 +727,13 @@ function renderPerformanceTable(perfList) {
     perfList.forEach(p => {
         const tr = document.createElement("tr");
         const diffColor = p.beating_benchmark ? "var(--color-positive)" : "var(--color-negative)";
-        const icon = p.beating_benchmark ? "🏆 מכה" : "מפגר";
+        const label = p.beating_benchmark ? "מכה מדד" : "מפגר";
         tr.innerHTML = `
-            <td style="font-weight:700;" class="latin">${p.period}</td>
-            <td class="latin">${p.stock_return > 0 ? '+' : ''}${p.stock_return}%</td>
-            <td class="latin">${p.benchmark_return > 0 ? '+' : ''}${p.benchmark_return}%</td>
-            <td class="latin" style="color: ${diffColor}; font-weight:700;">${p.alpha_diff > 0 ? '+' : ''}${p.alpha_diff}%</td>
-            <td style="color: ${diffColor};">${icon}</td>
+            <td style="font-weight:700; text-align:right;"><span class="latin">${p.period}</span></td>
+            <td style="text-align:center;"><span class="latin">${p.stock_return > 0 ? '+' : ''}${p.stock_return}%</span></td>
+            <td style="text-align:center;"><span class="latin">${p.benchmark_return > 0 ? '+' : ''}${p.benchmark_return}%</span></td>
+            <td style="text-align:center;"><span class="latin" style="color: ${diffColor}; font-weight:700;">${p.alpha_diff > 0 ? '+' : ''}${p.alpha_diff}%</span></td>
+            <td style="text-align:center; color: ${diffColor}; font-weight:600;">${label}</td>
         `;
         tbody.appendChild(tr);
     });
@@ -749,13 +749,13 @@ function renderForecastSection(fc) {
         const probSpColor = h.prob_beat_sp500 >= 55 ? "var(--color-positive)" : "var(--color-neutral)";
 
         tr.innerHTML = `
-            <td style="font-weight:700;">${h.label}</td>
-            <td class="latin" style="color:${probPosColor}; font-weight:700;">${h.prob_positive}%</td>
-            <td class="latin" style="color:${probSpColor}; font-weight:700;">${h.prob_beat_sp500}%</td>
-            <td class="latin" style="color:var(--color-negative);">$${h.bear_case_p10.price} (${h.bear_case_p10.return_percent > 0 ? '+' : ''}${h.bear_case_p10.return_percent}%)</td>
-            <td class="latin" style="color:var(--text-primary); font-weight:700;">$${h.base_case_p50.price} (${h.base_case_p50.return_percent > 0 ? '+' : ''}${h.base_case_p50.return_percent}%)</td>
-            <td class="latin" style="color:var(--color-positive); font-weight:700;">$${h.bull_case_p90.price} (${h.bull_case_p90.return_percent > 0 ? '+' : ''}${h.bull_case_p90.return_percent}%)</td>
-            <td><span class="meta-chip">${h.confidence_level}</span></td>
+            <td style="font-weight:700; text-align:right;">${h.label}</td>
+            <td style="text-align:center;"><span class="latin" style="color:${probPosColor}; font-weight:700;">${h.prob_positive}%</span></td>
+            <td style="text-align:center;"><span class="latin" style="color:${probSpColor}; font-weight:700;">${h.prob_beat_sp500}%</span></td>
+            <td style="text-align:center;"><span class="latin" style="color:var(--color-negative);">$${h.bear_case_p10.price} (${h.bear_case_p10.return_percent > 0 ? '+' : ''}${h.bear_case_p10.return_percent}%)</span></td>
+            <td style="text-align:center;"><span class="latin" style="color:var(--text-primary); font-weight:700;">$${h.base_case_p50.price} (${h.base_case_p50.return_percent > 0 ? '+' : ''}${h.base_case_p50.return_percent}%)</span></td>
+            <td style="text-align:center;"><span class="latin" style="color:var(--color-positive); font-weight:700;">$${h.bull_case_p90.price} (${h.bull_case_p90.return_percent > 0 ? '+' : ''}${h.bull_case_p90.return_percent}%)</span></td>
+            <td style="text-align:center;"><span class="meta-chip">${h.confidence_level}</span></td>
         `;
         tbody.appendChild(tr);
     });
@@ -1648,7 +1648,7 @@ function initAiAnalystSystem() {
         typingEl.className = "ai-msg ai-msg-bot";
         typingEl.id = "aiTypingMsg";
         typingEl.innerHTML = `
-            <div class="ai-msg-avatar">🤖</div>
+            <div class="ai-msg-avatar" style="font-size:11px; font-weight:800; background:rgba(56,189,248,0.2); color:#38BDF8; font-family:'JetBrains Mono',monospace;">AI</div>
             <div class="ai-msg-bubble ai-typing">
                 <span class="ai-typing-dot"></span>
                 <span class="ai-typing-dot"></span>
@@ -1700,12 +1700,12 @@ function initAiAnalystSystem() {
         
         if (role === "user") {
             msgEl.innerHTML = `
-                <div class="ai-msg-avatar">👤</div>
+                <div class="ai-msg-avatar" style="font-size:11px; font-weight:700; background:rgba(59,130,246,0.2); color:#60A5FA;">אתה</div>
                 <div class="ai-msg-bubble">${escapeHtml(rawContent)}</div>
             `;
         } else {
             msgEl.innerHTML = `
-                <div class="ai-msg-avatar">🤖</div>
+                <div class="ai-msg-avatar" style="font-size:11px; font-weight:800; background:rgba(56,189,248,0.2); color:#38BDF8; font-family:'JetBrains Mono',monospace;">AI</div>
                 <div class="ai-msg-bubble">${formatMarkdown(rawContent)}</div>
             `;
         }

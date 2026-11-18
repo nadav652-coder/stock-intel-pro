@@ -7,15 +7,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg-main: #080C14;
-  --bg-card: #0E131F;
-  --bg-card-hover: #131A2B;
-  --bg-subtle: #151D2E;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-light: rgba(255, 255, 255, 0.14);
-  --border-focus: #38BDF8;
+  --bg-main: #0B0E14;
+  --bg-card: #111722;
+  --bg-card-hover: #151D2A;
+  --bg-subtle: #161E2E;
+  --border-color: #1F293D;
+  --border-light: #2A374F;
+  --border-focus: #3B82F6;
   
-  --text-primary: #F1F5F9;
+  --text-primary: #F8FAFC;
   --text-secondary: #94A3B8;
   --text-muted: #64748B;
   --text-dim: #475569;
@@ -24,21 +24,21 @@
   --color-positive-bg: rgba(16, 185, 129, 0.08);
   --color-positive-border: rgba(16, 185, 129, 0.25);
   
-  --color-negative: #F43F5E;
-  --color-negative-bg: rgba(244, 63, 94, 0.08);
-  --color-negative-border: rgba(244, 63, 94, 0.25);
+  --color-negative: #EF4444;
+  --color-negative-bg: rgba(239, 68, 68, 0.08);
+  --color-negative-border: rgba(239, 68, 68, 0.25);
   
   --color-neutral: #F59E0B;
   --color-neutral-bg: rgba(245, 158, 11, 0.08);
   --color-neutral-border: rgba(245, 158, 11, 0.25);
   
-  --color-blue: #38BDF8;
-  --color-blue-bg: rgba(56, 189, 248, 0.08);
-  --color-purple: #818CF8;
+  --color-blue: #3B82F6;
+  --color-blue-bg: rgba(59, 130, 246, 0.08);
+  --color-purple: #6366F1;
   
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
   --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -79,7 +79,6 @@ body {
 .latin,
 .price-large,
 .score-number,
-.data-table td,
 code,
 pre {
   font-family: 'JetBrains Mono', monospace;
@@ -88,6 +87,25 @@ pre {
   unicode-bidi: isolate;
   display: inline-block;
   font-variant-numeric: tabular-nums;
+}
+
+/* Strict Table Cell Safeguard (Prevents cell collapse) */
+td, th,
+td.latin, th.latin,
+td.mono, th.mono,
+.data-table td, .data-table th,
+.data-table td.latin, .data-table th.latin {
+  display: table-cell !important;
+  vertical-align: middle;
+}
+
+td.latin,
+.data-table td.latin {
+  direction: ltr !important;
+  text-align: left !important;
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  unicode-bidi: isolate;
 }
 
 /* Header & Financial Terminal Navbar */
@@ -835,38 +853,85 @@ header {
   gap: 24px;
 }
 
-/* Tables (Strict RTL) */
+/* Tables (Institutional Financial Table Standard) */
 .data-table-wrapper {
   overflow-x: auto;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .data-table {
   width: 100%;
+  display: table !important;
   border-collapse: collapse;
   direction: rtl;
   text-align: right;
-  font-size: 14px;
+  font-size: 13.5px;
+  table-layout: auto;
+}
+
+.data-table thead {
+  display: table-header-group !important;
+  background: #111726;
+}
+
+.data-table tbody {
+  display: table-row-group !important;
+}
+
+.data-table tr {
+  display: table-row !important;
+  transition: background 0.12s ease;
 }
 
 .data-table th {
-  background: #172033;
+  display: table-cell !important;
+  background: #111726;
   color: var(--text-secondary);
-  font-weight: 700;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+  font-size: 12.5px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border-light);
   white-space: nowrap;
+  text-align: right;
+  vertical-align: middle;
 }
 
 .data-table td {
+  display: table-cell !important;
   padding: 12px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
+  text-align: right;
+  vertical-align: middle;
+  font-size: 13.5px;
+}
+
+.data-table td.latin {
+  display: table-cell !important;
+  direction: ltr !important;
+  text-align: left !important;
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table td .latin {
+  direction: ltr !important;
+  text-align: left !important;
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+}
+
+.data-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.012);
 }
 
 .data-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(56, 189, 248, 0.04);
 }
 
 .data-table tbody tr:last-child td {
@@ -1607,9 +1672,9 @@ footer {
   }
 
   .data-table {
-    min-width: 480px !important;
+    min-width: 620px !important;
     width: 100% !important;
-    font-size: 12px;
+    font-size: 12.5px;
   }
 
   .etf-stats-grid,
@@ -1746,9 +1811,9 @@ footer {
   }
 
   .data-table {
-    min-width: 480px !important;
+    min-width: 620px !important;
     width: 100% !important;
-    font-size: 12px;
+    font-size: 12.5px;
   }
 
   .data-table th,
