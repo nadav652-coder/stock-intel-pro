@@ -1581,6 +1581,13 @@ function initAiAnalystSystem() {
             keyBar.style.display = keyBar.style.display === "none" ? "block" : "none";
         });
     }
+    if (engineBadge && keyBar) {
+        engineBadge.style.cursor = "pointer";
+        engineBadge.title = "לחץ להגדרת מפתח Google Gemini חינמי (אופציונלי)";
+        engineBadge.addEventListener("click", () => {
+            keyBar.style.display = keyBar.style.display === "none" ? "block" : "none";
+        });
+    }
     if (saveKeyBtn && keyInput) {
         saveKeyBtn.addEventListener("click", () => {
             const val = keyInput.value.trim();
