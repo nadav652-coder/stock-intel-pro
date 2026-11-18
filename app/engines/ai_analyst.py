@@ -35,6 +35,7 @@ class AIAnalystEngine:
         risk = data.get("risk") or {}
         synth = data.get("synthesis") or {}
         sec_info = data.get("sec_info") or {}
+        seasonality = data.get("seasonality") or {}
 
         metrics_map = {m["id"]: m for m in (fund.get("metrics") or []) if isinstance(m, dict) and "id" in m}
         scores_map = synth.get("scores") or {}
@@ -42,7 +43,7 @@ class AIAnalystEngine:
         # 1. Try Live Generative AI (Gemini 1.5 Flash) if key is present
         if api_key:
             try:
-                gemini_res = cls._call_gemini(api_key, ticker, question, profile, fund, val, risk, synth, metrics_map, history)
+                gemini_res = cls._call_gemini(api_key, ticker, question, profile, fund, val, risk, synth, metrics_map, history, seasonality)
                 if gemini_res:
                     return {
                         "success": True,
@@ -62,7 +63,8 @@ class AIAnalystEngine:
             val=val,
             risk=risk,
             synth=synth,
-            metrics_map=metrics_map
+            metrics_map=metrics_map,
+            seasonality=seasonality
         )
 
         return {
@@ -84,7 +86,8 @@ class AIAnalystEngine:
         risk: Dict[str, Any],
         synth: Dict[str, Any],
         metrics: Dict[str, Any],
-        history: Optional[List[Dict[str, str]]] = None
+        history: Optional[List[Dict[str, str]]] = None,
+        seasonality: Optional[Dict[str, Any]] = None
     ) -> Optional[str]:
         system_instruction = (
             "אתה אנליסט מומחה למחקר עסקי, כלכלי, טכנולוגי ופיננסי מוסדי במערכת StockIntel Pro.\n"
@@ -136,6 +139,11 @@ class AIAnalystEngine:
 - מדד אלטמן (Altman Z-Score): {altman} ({altman_zone})
 - שווי הוגן במודל DCF: ${dcf_fair} (שולי ביטחון: {dcf_margin}%)
 """
+        if seasonality and seasonality.get("best_month"):
+            bm = seasonality.get("best_month", {})
+            wm = seasonality.get("worst_month", {})
+            sy = seasonality.get("sample_years", 10)
+            context_text += f"- עונתיות חודשית ({sy} שנות מדגם): חודש חזק ביותר: {bm.get('name_he')} ({bm.get('avg_return'):+0.1f}%, {bm.get('win_rate')}% שנות עלייה) | חודש חלש ביותר: {wm.get('name_he')} ({wm.get('avg_return'):+0.1f}%, {wm.get('win_rate')}% שנות עלייה)\n"
 
         contents = []
         if history:
@@ -178,7 +186,8 @@ class AIAnalystEngine:
         val: Dict[str, Any],
         risk: Dict[str, Any],
         synth: Dict[str, Any],
-        metrics_map: Dict[str, Any]
+        metrics_map: Dict[str, Any],
+        seasonality: Optional[Dict[str, Any]] = None
     ) -> str:
         q = question.lower()
         q_tokens = set(re.findall(r'[\w]+', q))
@@ -311,6 +320,18 @@ class AIAnalystEngine:
                 f"אני שמח שהמידע היה שימושי ומקצועי עבורך. אני כאן לכל שאלה נוספת, בין אם לגבי **{name} ({ticker})**, ניתוח מניות אחרות, או מעקב אחר תיק ההשקעות האישי שלך.\n\n"
                 f"המשך השקעות נבונות ומוצלחות!"
             )
+
+        # =====================================================================
+        # 0F. Seasonality & Monthly Cyclicality (עונתיות, חודשים מוצלחים, דפוסי לוח שנה)
+        # =====================================================================
+        seasonality_triggers = [
+            "עונתיות", "עונתי", "עונתיות חודשית", "חודש", "חודשים", "חודשי", "חודשים מוצלחים",
+            "חודש הכי טוב", "חודש הכי חלש", "חודש חזק", "חודש חלש", "חודש מוצלח", "ירידה באופן קבוע",
+            "סנטה קלאוס", "ראלי סנטה", "אפקט דצמבר", "ספטמבר", "דצמבר", "sell in may", "מחזוריות",
+            "מגמות לפי חודשים", "seasonality", "monthly", "חודשים שהם מצליחות"
+        ]
+        if any(w in q for w in seasonality_triggers):
+            return cls._build_seasonality_response(ticker, name, seasonality)
 
         # =====================================================================
         # 1. Recommendation, Timing & Whether to Invest (האם כדאי להשקיע / המלצה / טיימינג)
@@ -815,4 +836,53 @@ class AIAnalystEngine:
             f"**3. השורה התחתונה למשקיע:**\n"
             f"הנכס מציג איכות עסקית וחפיר כלכלי מובהק. אם מטרתך היא השקעה לטווח ארוך, מומלץ לבחון כניסה במנות מדורגות כדי לגדר את סיכוני התמחור והתנודתיות בשוק.\n\n"
             f"💡 *למענה פתוח ומותאם אישית לכל ניואנס בשאלתך, ניתן לחבר מפתח Gemini חינמי דרך כפתור 'מפתח AI' בראש החלונית.*"
+        )
+
+    @classmethod
+    def _build_seasonality_response(cls, ticker: str, name: str, seasonality: Optional[Dict[str, Any]]) -> str:
+        if not seasonality or not seasonality.get("monthly_stats"):
+            return (
+                f"### ניתוח עונתיות חודשית ומחזוריות שנתית: {name} ({ticker})\n\n"
+                f"כרגע נאספים נתוני היסטוריית המסחר המלאים לצורך חישוב מדויק של עונתיות 10-שנתית עבור {ticker}.\n\n"
+                f"באופן כללי בשוק ההון האמריקאי:\n"
+                f"* **חודשים חזקים מסורתית:** נובמבר ודצמבר ('ראלי סוף השנה') ואפריל.\n"
+                f"* **חודשים מאתגרים מסורתית:** ספטמבר הוא היסטורית החודש החלש ביותר ב-S&P 500, ואוגוסט מתאפיין בתנודתיות גבוהה ונזילות נמוכה.\n\n"
+                f"תוכל לעבור ללשונית **'ניתוח עונתיות חודשית'** בלוח הבקרה לצפייה במטריצה המלאה ובגרף החודשים."
+            )
+
+        sy = seasonality.get("sample_years", 10)
+        bm = seasonality.get("best_month") or {}
+        wm = seasonality.get("worst_month") or {}
+        h_win = seasonality.get("highest_win_rate_month") or {}
+        cur_m = seasonality.get("current_month") or {}
+        nxt_m = seasonality.get("next_month") or {}
+        anomalies = seasonality.get("anomalies") or {}
+        santa = anomalies.get("santa_rally") or {}
+        sep = anomalies.get("september_effect") or {}
+        sell_may = anomalies.get("sell_in_may") or {}
+
+        # Top 3 best months and bottom 3 months
+        valid_months = [m for m in seasonality.get("monthly_stats", []) if m.get("total_years", 0) > 0]
+        sorted_months = sorted(valid_months, key=lambda x: x.get("avg_return", 0), reverse=True)
+        top3_str = ", ".join([f"**{m['name_he']}** ({m['avg_return']:+0.1f}%, {m['win_rate']}% שנות רווח)" for m in sorted_months[:3]])
+        worst3_str = ", ".join([f"**{m['name_he']}** ({m['avg_return']:+0.1f}%, {m['win_rate']}% שנות רווח)" for m in sorted_months[-3:]])
+
+        return (
+            f"### ניתוח עונתיות כמותי ומחזוריות חודשית: {name} ({ticker})\n\n"
+            f"הניתוח מבוסס על **מדגם היסטורי של {sy} שנים** של נתוני מסחר מבוקרים:\n\n"
+            f"**1. החודשים החזקים ביותר לאורך ההיסטוריה:**\n"
+            f"* **החודש הטוב ביותר:** **{bm.get('name_he')}** עם תשואה חודשית ממוצעת של **{bm.get('avg_return'):+0.2f}%** ושיעור שנות עלייה של **{bm.get('win_rate')}%**.\n"
+            f"* **החודש בעל שיעור ההצלחה הגבוה ביותר (Win Rate):** **{h_win.get('name_he')}** — עלה ב-**{h_win.get('win_rate')}%** מהשנים עם תשואה ממוצעת של **{h_win.get('avg_return'):+0.2f}%**.\n"
+            f"* **שלושת החודשים המובילים:** {top3_str}.\n\n"
+            f"**2. החודשים החלשים והמאתגרים ביותר:**\n"
+            f"* **החודש החלש ביותר:** **{wm.get('name_he')}** עם ביצועים ממוצעים של **{wm.get('avg_return'):+0.2f}%** ושיעור הצלחה של **{wm.get('win_rate')}%** בלבד.\n"
+            f"* **שלושת החודשים החלשים:** {worst3_str}.\n\n"
+            f"**3. בדיקת אנומליות שוק ודפוסי וול סטריט מוכחים:**\n"
+            f"* **{santa.get('name', 'ראלי סנטה קלאוס')}:** {santa.get('description', '')}\n"
+            f"* **{sep.get('name', 'אפקט ספטמבר')}:** {sep.get('description', '')}\n"
+            f"* **{sell_may.get('name', 'Sell in May')}:** {sell_may.get('description', '')}\n\n"
+            f"**4. תמונת מצב אקטואלית (החודש הנוכחי והבא):**\n"
+            f"* **החודש הנוכחי ({cur_m.get('name_he')}):** היסטורית מציג תשואה ממוצעת של **{cur_m.get('avg_return'):+0.1f}%** עם **{cur_m.get('win_rate')}%** שנות עלייה.\n"
+            f"* **החודש הבא ({nxt_m.get('name_he')}):** היסטורית מציג תשואה ממוצעת של **{nxt_m.get('avg_return'):+0.1f}%** עם **{nxt_m.get('win_rate')}%** שנות עלייה.\n\n"
+            f"💡 **השורה התחתונה למשקיע:** עונתיות אינה ערובה לעתיד, אך היא כלי רב-עוצמה לתזמון כניסות מדורגות (DCA) ולהימנעות מקנייה אמוציונלית בשיא לפני חודשים שבאופן מסורתי נוטים לתיקון. ניתן לצפות במטריצת החודשים המלאה בלשונית **'ניתוח עונתיות חודשית'**."
         )

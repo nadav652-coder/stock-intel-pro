@@ -11,7 +11,7 @@
     <!-- Plotly.js for Institutional Charts -->
     <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="/static/css/style.css?v=5.4">
+    <link rel="stylesheet" href="/static/css/style.css?v=5.8">
 </head>
 <body>
 
@@ -317,6 +317,7 @@
             <!-- Clean Tabbed Navigation Bar (Removes the endless clutter!) -->
             <div class="clean-section-tabs">
                 <button class="sec-tab-btn active" data-tab="tabOverview">סקירה וביצועי שוק</button>
+                <button class="sec-tab-btn" data-tab="tabSeasonality">ניתוח עונתיות חודשית</button>
                 <button class="sec-tab-btn" data-tab="tabFundamentals">דוחות כספיים ומדדי ליבה</button>
                 <button class="sec-tab-btn" data-tab="tabValuation">הערכת שווי ומודל DCF</button>
                 <button class="sec-tab-btn" data-tab="tabForecast">חיזוי הסתברותי (מונטה קרלו)</button>
@@ -479,6 +480,175 @@
                                 </div>
                             </div>
                             <div id="suitabilityList"></div>
+                        </div>
+
+                        <!-- Seasonality Quick Teaser Banner -->
+                        <div class="card" style="background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(15,23,42,0.6) 100%); border-color: rgba(16,185,129,0.3); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 16px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span class="card-title-icon" style="background: rgba(16,185,129,0.2); color: #34D399; width: 34px; height: 34px;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                </span>
+                                <div>
+                                    <div style="font-size: 14px; font-weight: 700; color: #F1F5F9;">ניתוח עונתיות חודשית ומחזוריות שנתית</div>
+                                    <div id="overviewSeasonalitySnippet" style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">
+                                        בדיקה אמפירית של ביצועי הנכס ב-10 השנים האחרונות לפי חודש קלנדרי (ינואר-דצמבר).
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="btnJumpToSeasonality" class="pill-btn" style="background: rgba(16,185,129,0.15); color: #34D399; border-color: rgba(16,185,129,0.4); font-weight: 700; cursor: pointer;">
+                                צפה במטריצת החודשים המלאה ←
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: MONTHLY SEASONALITY & ANNUAL RETURN MATRIX -->
+            <div id="tabSeasonality" class="tab-pane">
+                <div class="main-grid">
+                    <!-- Seasonality Hero & Timeframe Selector -->
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+                            <div class="card-title">
+                                <span class="card-title-icon" style="background: rgba(16,185,129,0.15); color: #34D399;">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                </span>
+                                <span>ניתוח עונתיות חודשית ומחזוריות שנתית (Monthly Seasonality)</span>
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <span style="font-size: 12px; color: var(--text-muted);">אופק בדיקה:</span>
+                                <div class="seasonality-period-toggle">
+                                    <button class="seasonality-period-btn active" data-period="10y">10 שנים</button>
+                                    <button class="seasonality-period-btn" data-period="5y">5 שנים</button>
+                                    <button class="seasonality-period-btn" data-period="max">כל ההיסטוריה</button>
+                                </div>
+                            </div>
+                        </div>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6;">
+                            ניתוח כמותי של תשואות המניה בכל אחד מ-12 חודשי השנה (ינואר עד דצמבר), חישוב שיעור שנות הרווח (Win Rate), ומיפוי אנומליות שוק היסטוריות לפי סטנדרט המחקר של Seasonax ו-Koyfin.
+                        </p>
+
+                        <!-- Top 4 Seasonality KPIs -->
+                        <div class="seasonality-kpi-grid">
+                            <div class="seasonality-kpi-card highlight-green">
+                                <div class="seasonality-kpi-label">החודש החזק ביותר היסטורית</div>
+                                <div id="seasonBestMonthName" class="seasonality-kpi-val">—</div>
+                                <div id="seasonBestMonthDetail" class="seasonality-kpi-sub">—</div>
+                            </div>
+                            <div class="seasonality-kpi-card highlight-red">
+                                <div class="seasonality-kpi-label">החודש החלש ביותר היסטורית</div>
+                                <div id="seasonWorstMonthName" class="seasonality-kpi-val">—</div>
+                                <div id="seasonWorstMonthDetail" class="seasonality-kpi-sub">—</div>
+                            </div>
+                            <div class="seasonality-kpi-card">
+                                <div class="seasonality-kpi-label">שיעור הצלחה מרבי (Win Rate)</div>
+                                <div id="seasonHighestWinName" class="seasonality-kpi-val">—</div>
+                                <div id="seasonHighestWinDetail" class="seasonality-kpi-sub">—</div>
+                            </div>
+                            <div class="seasonality-kpi-card">
+                                <div class="seasonality-kpi-label">החודש הנוכחי והחודש הבא</div>
+                                <div id="seasonUpcomingMonthName" class="seasonality-kpi-val">—</div>
+                                <div id="seasonUpcomingMonthDetail" class="seasonality-kpi-sub">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Average Returns Bar Chart -->
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-title-icon" style="background: rgba(59,130,246,0.15); color: #60A5FA;">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                                </span>
+                                <span>התפלגות תשואה ממוצעת ושיעור הצלחה לפי חודש קלנדרי (ינואר - דצמבר)</span>
+                            </div>
+                            <span class="meta-chip" id="seasonSampleYearsChip">10 שנות מדגם</span>
+                        </div>
+                        <div id="chartSeasonalityBar" style="height: 360px; width: 100%;"></div>
+                    </div>
+
+                    <!-- Market Anomalies 3-Box Grid -->
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-title-icon" style="background: rgba(245,158,11,0.15); color: #FBBF24;">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                </span>
+                                <span>בדיקת אנומליות ודפוסי שוק מוכחים (Calendar Anomalies)</span>
+                            </div>
+                        </div>
+                        <div class="anomalies-grid">
+                            <div class="anomaly-card" id="anomalySanta">
+                                <div class="anomaly-header">
+                                    <span class="anomaly-icon">🎅</span>
+                                    <div>
+                                        <div class="anomaly-title">ראלי סנטה קלאוס (אפקט דצמבר)</div>
+                                        <div class="anomaly-verdict" id="santaVerdict">—</div>
+                                    </div>
+                                </div>
+                                <div class="anomaly-body" id="santaDesc">—</div>
+                            </div>
+                            <div class="anomaly-card" id="anomalySep">
+                                <div class="anomaly-header">
+                                    <span class="anomaly-icon">🍂</span>
+                                    <div>
+                                        <div class="anomaly-title">אפקט ספטמבר (September Effect)</div>
+                                        <div class="anomaly-verdict" id="sepVerdict">—</div>
+                                    </div>
+                                </div>
+                                <div class="anomaly-body" id="sepDesc">—</div>
+                            </div>
+                            <div class="anomaly-card" id="anomalySellMay">
+                                <div class="anomaly-header">
+                                    <span class="anomaly-icon">☀️</span>
+                                    <div>
+                                        <div class="anomaly-title">Sell in May and Go Away</div>
+                                        <div class="anomaly-verdict" id="sellMayVerdict">—</div>
+                                    </div>
+                                </div>
+                                <div class="anomaly-body" id="sellMayDesc">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Year x Month Heatmap Table -->
+                    <div class="card">
+                        <div class="card-header" style="flex-wrap: wrap; gap: 8px;">
+                            <div class="card-title">
+                                <span class="card-title-icon" style="background: rgba(139,92,246,0.15); color: #A78BFA;">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                                </span>
+                                <span>מטריצת עונתיות שנתית מלאה (Year &times; Month Matrix)</span>
+                            </div>
+                            <div class="heatmap-legend">
+                                <span class="legend-box" style="background: rgba(16, 185, 129, 0.7);"></span> תשואה חיובית (> 0%)
+                                <span class="legend-box" style="background: rgba(239, 68, 68, 0.7); margin-right: 12px;"></span> תשואה שלילית (< 0%)
+                            </div>
+                        </div>
+                        <div class="table-container" style="overflow-x: auto; margin-top: 12px;">
+                            <table class="data-table seasonality-table" id="seasonalityMatrixTable">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width: 70px;">שנה</th>
+                                        <th>ינו'</th>
+                                        <th>פבר'</th>
+                                        <th>מרץ</th>
+                                        <th>אפר'</th>
+                                        <th>מאי</th>
+                                        <th>יוני</th>
+                                        <th>יולי</th>
+                                        <th>אוג'</th>
+                                        <th>ספט'</th>
+                                        <th>אוק'</th>
+                                        <th>נוב'</th>
+                                        <th>דצמ'</th>
+                                        <th style="min-width: 90px; border-right: 2px solid var(--border-color);">תשואה שנתית</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="seasonalityMatrixBody">
+                                    <!-- Rendered dynamically via app.js -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -1014,6 +1184,6 @@
     </footer>
 
     <!-- Client Script -->
-    <script src="/static/js/app.js?v=5.4"></script>
+    <script src="/static/js/app.js?v=5.8"></script>
 </body>
 </html>

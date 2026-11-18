@@ -15,6 +15,7 @@ from app.engines.forecast import ForecastEngine
 from app.engines.synthesis import SynthesisEngine
 from app.engines.reports_translator import ReportsTranslator
 from app.engines.portfolio import PortfolioEngine
+from app.engines.seasonality import SeasonalityEngine
 from app.core.cache import cache
 
 class AnalysisService:
@@ -91,6 +92,10 @@ class AnalysisService:
         # 9. Translated Financial Statements & SEC Key Sections
         translated_reports = ReportsTranslator.generate_full_reports(financials, profile)
 
+        # 10. Quantitative Monthly Seasonality Engine (10-Year historical horizon)
+        stock_10y_df = self.provider.get_historical_prices(ticker, period="10y")
+        seasonality = SeasonalityEngine.analyze(stock_10y_df if not stock_10y_df.empty else stock_df, ticker=ticker)
+
         payload = {
             "ticker": ticker,
             "profile": profile,
@@ -101,12 +106,18 @@ class AnalysisService:
             "forecast": forecast,
             "synthesis": synthesis,
             "price_chart_data": price_chart_data,
-            "translated_reports": translated_reports
+            "translated_reports": translated_reports,
+            "seasonality": seasonality
         }
 
         # Cache full payload for 1 hour
         cache.set(cache_key, payload, ttl=3600)
         return payload
+
+    def get_seasonality(self, ticker: str, period: str = "10y") -> Dict[str, Any]:
+        ticker = ticker.upper().strip()
+        stock_df = self.provider.get_historical_prices(ticker, period=period)
+        return SeasonalityEngine.analyze(stock_df, ticker=ticker)
 
     def get_financial_reports(self, ticker: str) -> Dict[str, Any]:
         ticker = ticker.upper().strip()

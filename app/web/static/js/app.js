@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initQuickPills();
     initDCFSliders();
     initReportsModal();
+    initSeasonalityControls();
     
     // Determine initial ticker: URL hash > URL query param > localStorage > default AAPL
     const hashTicker = window.location.hash.replace("#", "").trim().toUpperCase();
@@ -85,6 +86,11 @@ function initSectionTabs() {
             if (targetPane) {
                 targetPane.classList.add("active");
                 window.dispatchEvent(new Event('resize'));
+                if (targetId === "tabSeasonality") {
+                    setTimeout(() => {
+                        try { Plotly.Plots.resize('chartSeasonalityBar'); } catch(e){}
+                    }, 50);
+                }
             }
         });
     });
@@ -543,6 +549,9 @@ function renderAnalysis(data) {
 
     // 13. Interactive Charts (Plotly)
     try { renderCharts(data); } catch (e) { console.error("renderCharts error:", e); }
+
+    // 14. Monthly Seasonality & Return Matrix
+    try { renderSeasonality(data.seasonality, data.ticker); } catch (e) { console.error("renderSeasonality error:", e); }
 }
 
 function renderScores(synth) {
@@ -889,6 +898,220 @@ function renderCharts(data) {
 
         Plotly.newPlot('chartMonteCarlo', [traceP10, traceP50, traceP90], layoutFan, { responsive: true, displayModeBar: false });
     }
+}
+
+/* ==========================================================================
+   Monthly Seasonality & Return Matrix (Koyfin / Seasonax Standard)
+   ========================================================================== */
+
+function renderSeasonality(seasonality, ticker) {
+    if (!seasonality || !seasonality.monthly_stats || seasonality.monthly_stats.length === 0) {
+        return;
+    }
+
+    const sy = seasonality.sample_years || 10;
+    const chip = document.getElementById("seasonSampleYearsChip");
+    if (chip) chip.textContent = `${sy} שנות מדגם`;
+
+    // Overview teaser snippet
+    const snip = document.getElementById("overviewSeasonalitySnippet");
+    if (snip && seasonality.best_month && seasonality.worst_month) {
+        const bm = seasonality.best_month;
+        const wm = seasonality.worst_month;
+        snip.innerHTML = `החודש ההיסטורי החזק ביותר: <strong style="color: #34D399;">${bm.name_he}</strong> (${bm.avg_return > 0 ? '+' : ''}${bm.avg_return}%, ${bm.win_rate}% שנות עלייה) | החודש החלש ביותר: <strong style="color: #F87171;">${wm.name_he}</strong> (${wm.avg_return}%)`;
+    }
+
+    // 1. KPIs
+    const bm = seasonality.best_month;
+    if (bm && document.getElementById("seasonBestMonthName")) {
+        document.getElementById("seasonBestMonthName").textContent = `${bm.name_he} (${bm.name_en})`;
+        document.getElementById("seasonBestMonthDetail").textContent = `${bm.avg_return > 0 ? '+' : ''}${bm.avg_return}% ממוצע | ${bm.win_rate}% שנות עלייה`;
+    }
+
+    const wm = seasonality.worst_month;
+    if (wm && document.getElementById("seasonWorstMonthName")) {
+        document.getElementById("seasonWorstMonthName").textContent = `${wm.name_he} (${wm.name_en})`;
+        document.getElementById("seasonWorstMonthDetail").textContent = `${wm.avg_return > 0 ? '+' : ''}${wm.avg_return}% ממוצע | ${wm.win_rate}% שנות עלייה`;
+    }
+
+    const hw = seasonality.highest_win_rate_month;
+    if (hw && document.getElementById("seasonHighestWinName")) {
+        document.getElementById("seasonHighestWinName").textContent = `${hw.name_he} (${hw.win_rate}%)`;
+        document.getElementById("seasonHighestWinDetail").textContent = `${hw.avg_return > 0 ? '+' : ''}${hw.avg_return}% ממוצע היסטורי`;
+    }
+
+    const curM = seasonality.current_month;
+    const nxtM = seasonality.next_month;
+    if (curM && nxtM && document.getElementById("seasonUpcomingMonthName")) {
+        document.getElementById("seasonUpcomingMonthName").textContent = `${curM.name_he} / ${nxtM.name_he}`;
+        document.getElementById("seasonUpcomingMonthDetail").textContent = `נוכחי: ${curM.avg_return > 0 ? '+' : ''}${curM.avg_return}% | הבא: ${nxtM.avg_return > 0 ? '+' : ''}${nxtM.avg_return}%`;
+    }
+
+    // 2. Anomalies
+    const anomalies = seasonality.anomalies || {};
+    const santa = anomalies.santa_rally;
+    if (santa && document.getElementById("santaVerdict")) {
+        const vEl = document.getElementById("santaVerdict");
+        vEl.textContent = santa.is_favorable ? "מובהק היסטורית (חיובי ב-60%+)" : "דפוס מעורב";
+        vEl.style.color = santa.is_favorable ? "#34D399" : "#FBBF24";
+        document.getElementById("santaDesc").textContent = santa.description;
+    }
+
+    const sep = anomalies.september_effect;
+    if (sep && document.getElementById("sepVerdict")) {
+        const vEl = document.getElementById("sepVerdict");
+        vEl.textContent = sep.is_weak ? "אומת בנתונים (חודש שפל/חלש)" : "אינו מובהק במניה זו";
+        vEl.style.color = sep.is_weak ? "#F87171" : "#94A3B8";
+        document.getElementById("sepDesc").textContent = sep.description;
+    }
+
+    const sellMay = anomalies.sell_in_may;
+    if (sellMay && document.getElementById("sellMayVerdict")) {
+        const vEl = document.getElementById("sellMayVerdict");
+        vEl.textContent = sellMay.winter_favorable ? "חודשי החורף עדיפים (Nov-Apr)" : "חודשי הקיץ עדיפים (May-Oct)";
+        vEl.style.color = sellMay.winter_favorable ? "#60A5FA" : "#A78BFA";
+        document.getElementById("sellMayDesc").textContent = sellMay.description;
+    }
+
+    // 3. Plotly Seasonality Bar Chart
+    const mStats = seasonality.monthly_stats;
+    const monthsX = mStats.map(m => m.name_he);
+    const returnsY = mStats.map(m => m.avg_return);
+    const colors = returnsY.map(r => r >= 0 ? 'rgba(16, 185, 129, 0.85)' : 'rgba(239, 68, 68, 0.85)');
+    const borderColors = returnsY.map(r => r >= 0 ? '#10B981' : '#EF4444');
+
+    const hoverText = mStats.map(m => `<b>${m.name_he} (${m.name_en})</b><br>תשואה ממוצעת: ${m.avg_return > 0 ? '+' : ''}${m.avg_return}%<br>חציון: ${m.median_return > 0 ? '+' : ''}${m.median_return}%<br>שיעור הצלחה: ${m.win_rate}% (${m.positive_years}/${m.total_years} שנים)<br>שנה הטובה ביותר: ${m.best_return > 0 ? '+' : ''}${m.best_return}%<br>שנה החלשה ביותר: ${m.worst_return}%`);
+
+    const textLabels = mStats.map(m => `${m.avg_return > 0 ? '+' : ''}${m.avg_return}% (${m.win_rate}%)`);
+
+    const barTrace = {
+        x: monthsX,
+        y: returnsY,
+        type: 'bar',
+        text: textLabels,
+        textposition: 'outside',
+        textfont: {
+            family: 'JetBrains Mono, monospace',
+            size: 11,
+            color: '#CBD5E1'
+        },
+        hoverinfo: 'text',
+        hovertext: hoverText,
+        marker: {
+            color: colors,
+            line: {
+                color: borderColors,
+                width: 1.5
+            }
+        }
+    };
+
+    const barLayout = {
+        autosize: true,
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: { family: 'Assistant, sans-serif', color: '#94A3B8' },
+        margin: { t: 40, r: 15, l: 45, b: 45 },
+        showlegend: false,
+        xaxis: {
+            gridcolor: '#1E293B',
+            tickfont: { family: 'Assistant, sans-serif', size: 12, color: '#F1F5F9' },
+            fixedrange: true
+        },
+        yaxis: {
+            gridcolor: '#1E293B',
+            zerolinecolor: 'rgba(255, 255, 255, 0.3)',
+            zerolinewidth: 1.5,
+            ticksuffix: '%',
+            tickfont: { family: 'JetBrains Mono, monospace', size: 11, color: '#94A3B8' },
+            fixedrange: true
+        }
+    };
+
+    Plotly.newPlot('chartSeasonalityBar', [barTrace], barLayout, { responsive: true, displayModeBar: false });
+
+    // 4. Year x Month Heatmap Table
+    const tbody = document.getElementById("seasonalityMatrixBody");
+    if (tbody && seasonality.years_matrix) {
+        tbody.innerHTML = "";
+        seasonality.years_matrix.forEach(row => {
+            const tr = document.createElement("tr");
+
+            // Year Cell
+            let trHtml = `<td class="year-cell"><span class="latin">${row.year}</span></td>`;
+
+            // 12 Months
+            for (let m = 1; m <= 12; m++) {
+                const val = row.months[String(m)];
+                if (val !== null && val !== undefined) {
+                    const retNum = Number(val);
+                    let bgStyle = "";
+                    let textColor = "#F8FAFC";
+                    if (retNum > 0) {
+                        const alpha = Math.min(0.85, 0.2 + (retNum / 20) * 0.65);
+                        bgStyle = `background: rgba(16, 185, 129, ${alpha.toFixed(2)});`;
+                        if (alpha < 0.4) textColor = "#A7F3D0";
+                    } else if (retNum < 0) {
+                        const alpha = Math.min(0.85, 0.2 + (Math.abs(retNum) / 20) * 0.65);
+                        bgStyle = `background: rgba(239, 68, 68, ${alpha.toFixed(2)});`;
+                        if (alpha < 0.4) textColor = "#FECACA";
+                    } else {
+                        bgStyle = "background: rgba(100, 116, 139, 0.2);";
+                    }
+                    const sign = retNum > 0 ? "+" : "";
+                    trHtml += `<td style="${bgStyle} color: ${textColor};" title="${row.year} - חודש ${m}: ${sign}${retNum.toFixed(1)}%"><span class="latin">${sign}${retNum.toFixed(1)}%</span></td>`;
+                } else {
+                    trHtml += `<td style="color: #475569; background: rgba(15, 23, 42, 0.4);"><span class="latin">—</span></td>`;
+                }
+            }
+
+            // Annual Return
+            const ann = row.annual_return;
+            const annNum = Number(ann);
+            let annBg = annNum >= 0 ? "rgba(16, 185, 129, 0.25)" : "rgba(239, 68, 68, 0.25)";
+            let annColor = annNum >= 0 ? "#34D399" : "#F87171";
+            const annSign = annNum > 0 ? "+" : "";
+            trHtml += `<td class="annual-cell" style="background: ${annBg}; color: ${annColor};"><span class="latin">${annSign}${annNum.toFixed(1)}%</span></td>`;
+
+            tr.innerHTML = trHtml;
+            tbody.appendChild(tr);
+        });
+    }
+}
+
+function initSeasonalityControls() {
+    const jumpBtn = document.getElementById("btnJumpToSeasonality");
+    if (jumpBtn) {
+        jumpBtn.addEventListener("click", () => {
+            const seasonTabBtn = document.querySelector('.sec-tab-btn[data-tab="tabSeasonality"]');
+            if (seasonTabBtn) {
+                seasonTabBtn.click();
+                window.scrollTo({ top: seasonTabBtn.offsetTop - 80, behavior: 'smooth' });
+            }
+        });
+    }
+
+    document.querySelectorAll(".seasonality-period-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+            const period = btn.dataset.period;
+            document.querySelectorAll(".seasonality-period-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            const activeTicker = (document.getElementById("heroTicker")?.textContent || "AAPL").trim().toUpperCase();
+            try {
+                btn.disabled = true;
+                const res = await fetch(`/api/stock/${activeTicker}/seasonality?period=${period}`);
+                const json = await res.json();
+                if (json.success && json.data) {
+                    renderSeasonality(json.data, activeTicker);
+                }
+            } catch (err) {
+                console.error("Error fetching seasonality period:", err);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+    });
 }
 
 /* ==========================================================================

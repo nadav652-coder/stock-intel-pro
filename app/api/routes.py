@@ -67,6 +67,15 @@ async def get_stock_financial_reports(ticker: str):
     except Exception as e:
         return ApiResponse(success=False, error=f"שגיאה בשליפת דוחות מתורגמים עבור {ticker}: {str(e)}")
 
+@router.get("/api/stock/{ticker}/seasonality", response_model=ApiResponse)
+async def get_stock_seasonality(ticker: str, period: str = Query(default="10y", pattern="^(5y|10y|max)$")):
+    ticker = ticker.upper().strip()
+    try:
+        seasonality = analysis_service.get_seasonality(ticker, period=period)
+        return ApiResponse(success=True, data=seasonality)
+    except Exception as e:
+        return ApiResponse(success=False, error=f"שגיאה בניתוח עונתיות עבור {ticker}: {str(e)}")
+
 @router.post("/api/valuation/dcf", response_model=ApiResponse)
 async def simulate_dcf(request: DCFSimulationRequest):
     try:

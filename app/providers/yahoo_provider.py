@@ -475,9 +475,10 @@ class YahooDataProvider(BaseDataProvider):
         cached = cache.get(cache_key)
         if cached:
             df = pd.DataFrame(cached)
-            if not df.empty and "Date" in df.columns:
-                df["Date"] = pd.to_datetime(df["Date"])
-                df.set_index("Date", inplace=True)
+            date_col = "Date" if "Date" in df.columns else ("index" if "index" in df.columns else None)
+            if not df.empty and date_col:
+                df[date_col] = pd.to_datetime(df[date_col])
+                df.set_index(date_col, inplace=True)
             return df
 
         # Primary high-speed direct chart API
