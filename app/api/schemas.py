@@ -27,6 +27,7 @@ class AIAskRequest(BaseModel):
     ticker: str
     question: str
     history: Optional[List[Dict[str, str]]] = None
+    api_key: Optional[str] = None
 
 class ApiResponse(BaseModel):
     success: bool

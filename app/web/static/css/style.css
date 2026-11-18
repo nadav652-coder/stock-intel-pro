@@ -752,6 +752,56 @@ header {
   gap: 20px;
 }
 
+/* Yahoo Finance / Institutional 2-Column Key Statistics */
+.key-stats-section {
+  width: 100%;
+}
+
+.key-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.key-stats-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 13.5px;
+  transition: background 0.15s ease;
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.stat-row:hover {
+  background: rgba(255, 255, 255, 0.025);
+  border-radius: var(--radius-xs);
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-value {
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 14px;
+  text-align: left;
+}
+
 .risk-stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1567,7 +1617,8 @@ footer {
   .valuation-cards-grid,
   .sensitivity-sliders-grid,
   .portfolio-summary-grid,
-  .portfolio-columns-grid {
+  .portfolio-columns-grid,
+  .key-stats-grid {
     grid-template-columns: 1fr !important;
     gap: 12px !important;
   }

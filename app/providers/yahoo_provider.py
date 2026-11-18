@@ -21,6 +21,7 @@ ETF_CURATED_FALLBACK = {
         "category": "קרן סל מחקה מדד S&P 500",
         "expense_ratio": 0.09,
         "yield": 1.25,
+        "aum": 610000000000,
         "top_holdings": [
             {"symbol": "AAPL", "name": "Apple Inc.", "percent": 7.70},
             {"symbol": "NVDA", "name": "NVIDIA Corporation", "percent": 7.58},
@@ -51,6 +52,7 @@ ETF_CURATED_FALLBACK = {
         "category": "קרן סל מחקה מדד נאסד\"ק 100",
         "expense_ratio": 0.20,
         "yield": 0.58,
+        "aum": 315000000000,
         "top_holdings": [
             {"symbol": "AAPL", "name": "Apple Inc.", "percent": 9.10},
             {"symbol": "NVDA", "name": "NVIDIA Corporation", "percent": 8.80},
@@ -76,6 +78,7 @@ ETF_CURATED_FALLBACK = {
         "category": "קרן סל מחקה מדד S&P 500 (Vanguard)",
         "expense_ratio": 0.03,
         "yield": 1.30,
+        "aum": 550000000000,
         "top_holdings": [
             {"symbol": "AAPL", "name": "Apple Inc.", "percent": 7.70},
             {"symbol": "NVDA", "name": "NVIDIA Corporation", "percent": 7.58},
@@ -100,6 +103,7 @@ ETF_CURATED_FALLBACK = {
         "category": "קרן סל מחקה מדד דאו ג'ונס 30",
         "expense_ratio": 0.16,
         "yield": 1.75,
+        "aum": 36000000000,
         "top_holdings": [
             {"symbol": "GS", "name": "Goldman Sachs Group Inc.", "percent": 8.10},
             {"symbol": "UNH", "name": "UnitedHealth Group Inc.", "percent": 7.80},
@@ -124,6 +128,7 @@ ETF_CURATED_FALLBACK = {
         "category": "קרן סל מחקה מדד ראסל 2000 (חברות קטנות)",
         "expense_ratio": 0.19,
         "yield": 1.35,
+        "aum": 72000000000,
         "top_holdings": [
             {"symbol": "FTAI", "name": "FTAI Aviation Ltd.", "percent": 0.65},
             {"symbol": "VRT", "name": "Vertiv Holdings Co.", "percent": 0.58},
@@ -137,6 +142,42 @@ ETF_CURATED_FALLBACK = {
             "בריאות": 14.8,
             "טכנולוגיה": 13.9,
             "צריכה מחזורית": 11.2
+        }
+    },
+    "SCHD": {
+        "category": "קרן סל מניות דיבידנד איכותיות (Schwab U.S. Dividend)",
+        "expense_ratio": 0.06,
+        "yield": 3.40,
+        "aum": 65000000000,
+        "top_holdings": [
+            {"symbol": "HD", "name": "Home Depot Inc.", "percent": 4.30},
+            {"symbol": "CSCO", "name": "Cisco Systems Inc.", "percent": 4.20},
+            {"symbol": "CVX", "name": "Chevron Corp.", "percent": 4.10},
+            {"symbol": "ABBV", "name": "AbbVie Inc.", "percent": 4.00},
+            {"symbol": "TXN", "name": "Texas Instruments Inc.", "percent": 3.90}
+        ],
+        "sector_weightings": {
+            "פיננסים": 17.5,
+            "בריאות": 16.0,
+            "צריכה בסיסית": 14.2,
+            "תעשייה": 13.8,
+            "אנרגיה": 12.1
+        }
+    },
+    "SMH": {
+        "category": "קרן סל מוליכים למחצה ושבבים (VanEck Semiconductor)",
+        "expense_ratio": 0.35,
+        "yield": 0.45,
+        "aum": 28000000000,
+        "top_holdings": [
+            {"symbol": "NVDA", "name": "NVIDIA Corporation", "percent": 20.50},
+            {"symbol": "TSM", "name": "Taiwan Semiconductor (TSMC)", "percent": 12.80},
+            {"symbol": "AVGO", "name": "Broadcom Inc.", "percent": 7.40},
+            {"symbol": "ASML", "name": "ASML Holding NV", "percent": 4.90},
+            {"symbol": "AMD", "name": "Advanced Micro Devices", "percent": 4.60}
+        ],
+        "sector_weightings": {
+            "טכנולוגיה ושבבים": 99.5
         }
     }
 }
@@ -242,16 +283,38 @@ class YahooDataProvider(BaseDataProvider):
         flat_info = self._flatten_quote_summary(summary_data)
 
         # Fallback to yfinance standalone info if quoteSummary returned sparse data
-        if not flat_info or not flat_info.get("trailingPE"):
-            try:
-                yf_obj = yf.Ticker(ticker)
-                yf_info = yf_obj.info
+        try:
+            yf_obj = yf.Ticker(ticker)
+            if not flat_info or not flat_info.get("trailingPE"):
+                yf_info = getattr(yf_obj, "info", None)
                 if yf_info and isinstance(yf_info, dict):
                     for k, v in yf_info.items():
                         if k not in flat_info or flat_info[k] is None:
                             flat_info[k] = v
-            except Exception as e:
-                print(f"[YahooProvider] yf.info fallback note for {ticker}: {e}")
+
+            # Always enrich with lightweight fast_info for market stats
+            fi = getattr(yf_obj, "fast_info", None)
+            if fi:
+                if not flat_info.get("previousClose") and hasattr(fi, "previous_close"):
+                    flat_info["previousClose"] = fi.previous_close
+                if not flat_info.get("open") and hasattr(fi, "open"):
+                    flat_info["open"] = fi.open
+                if not flat_info.get("dayHigh") and hasattr(fi, "day_high"):
+                    flat_info["dayHigh"] = fi.day_high
+                if not flat_info.get("dayLow") and hasattr(fi, "day_low"):
+                    flat_info["dayLow"] = fi.day_low
+                if not flat_info.get("fiftyTwoWeekHigh") and hasattr(fi, "year_high"):
+                    flat_info["fiftyTwoWeekHigh"] = fi.year_high
+                if not flat_info.get("fiftyTwoWeekLow") and hasattr(fi, "year_low"):
+                    flat_info["fiftyTwoWeekLow"] = fi.year_low
+                if not flat_info.get("marketCap") and hasattr(fi, "market_cap"):
+                    flat_info["marketCap"] = fi.market_cap
+                if not flat_info.get("volume") and hasattr(fi, "last_volume"):
+                    flat_info["volume"] = fi.last_volume
+                if not flat_info.get("averageVolume") and hasattr(fi, "three_month_average_volume"):
+                    flat_info["averageVolume"] = fi.three_month_average_volume
+        except Exception as e:
+            print(f"[YahooProvider] yf.info / fast_info fallback note for {ticker}: {e}")
 
         # Always fetch chart data for rock-solid current price & 52-week stats
         fallback_meta, _ = self._fetch_chart_fallback(ticker, range_period="1mo")
@@ -332,10 +395,18 @@ class YahooDataProvider(BaseDataProvider):
             if (not cat_name or cat_name == "N/A") and ticker in ETF_CURATED_FALLBACK:
                 cat_name = ETF_CURATED_FALLBACK[ticker].get("category")
 
+            aum_val = (
+                flat_info.get("totalAssets")
+                or flat_info.get("netAssets")
+                or flat_info.get("marketCap")
+                or fallback_meta.get("marketCap")
+                or ETF_CURATED_FALLBACK.get(ticker, {}).get("aum")
+            )
+
             etf_data = {
                 "category": cat_name or "קרן סל מחקה מדד",
                 "expense_ratio": exp_ratio,
-                "aum": flat_info.get("totalAssets") or flat_info.get("marketCap"),
+                "aum": aum_val,
                 "yield": round(float(flat_info.get("yield") or 0.0) * 100, 2) if flat_info.get("yield") else (ETF_CURATED_FALLBACK.get(ticker, {}).get("yield")),
                 "top_holdings": top_holdings,
                 "sector_weightings": sector_weightings
@@ -357,6 +428,11 @@ class YahooDataProvider(BaseDataProvider):
             or ticker
         )
 
+        mcap_val = (
+            etf_data.get("aum") if is_etf and etf_data else
+            (flat_info.get("totalAssets") if is_etf else (flat_info.get("marketCap") or fallback_meta.get("marketCap") or ETF_CURATED_FALLBACK.get(ticker, {}).get("aum")))
+        )
+
         profile = {
             "ticker": ticker,
             "name": name,
@@ -369,7 +445,7 @@ class YahooDataProvider(BaseDataProvider):
             "website": flat_info.get("website", ""),
             "summary": flat_info.get("longBusinessSummary", ""),
             "currency": flat_info.get("currency") or fallback_meta.get("currency", "USD"),
-            "market_cap": flat_info.get("totalAssets") if is_etf else (flat_info.get("marketCap") or fallback_meta.get("marketCap")),
+            "market_cap": mcap_val,
             "current_price": round(float(curr_price), 2) if curr_price is not None else None,
             "day_high": flat_info.get("dayHigh") or fallback_meta.get("regularMarketDayHigh"),
             "day_low": flat_info.get("dayLow") or fallback_meta.get("regularMarketDayLow"),
@@ -380,6 +456,14 @@ class YahooDataProvider(BaseDataProvider):
             "shares_outstanding": flat_info.get("sharesOutstanding"),
             "full_time_employees": flat_info.get("fullTimeEmployees"),
             "exchange": flat_info.get("exchange") or fallback_meta.get("exchangeName", "US"),
+            "previous_close": flat_info.get("previousClose") or fallback_meta.get("regularMarketPreviousClose") or fallback_meta.get("chartPreviousClose"),
+            "open": flat_info.get("open") or fallback_meta.get("regularMarketOpen"),
+            "volume": flat_info.get("volume") or flat_info.get("last_volume") or fallback_meta.get("regularMarketVolume"),
+            "average_volume": flat_info.get("averageVolume") or flat_info.get("three_month_average_volume"),
+            "trailing_pe": flat_info.get("trailingPE"),
+            "forward_pe": flat_info.get("forwardPE"),
+            "eps": flat_info.get("trailingEps"),
+            "target_price": flat_info.get("targetMeanPrice") or flat_info.get("targetMedianPrice"),
         }
 
         cache.set(cache_key, profile, ttl=settings.CACHE_TTL_SECONDS)

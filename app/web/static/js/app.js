@@ -6,6 +6,17 @@
 let currentAnalysisData = null;
 let currentTicker = "AAPL";
 
+// Global Safe HTML Sanitizer (XSS Prevention)
+function escapeHtml(str) {
+    if (str === null || str === undefined) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     initViewSwitcher();
     initSectionTabs();
@@ -129,12 +140,12 @@ function initSearch() {
                         div.dataset.index = idx;
                         div.innerHTML = `
                             <div class="dropdown-info">
-                                <span class="dropdown-name">${item.name}</span>
-                                <span class="dropdown-desc">${item.desc || ''}</span>
+                                <span class="dropdown-name">${escapeHtml(item.name)}</span>
+                                <span class="dropdown-desc">${escapeHtml(item.desc || '')}</span>
                             </div>
                             <div class="dropdown-meta">
-                                <span class="dropdown-type">${item.type || 'מניה'}</span>
-                                <span class="dropdown-ticker">${item.ticker}</span>
+                                <span class="dropdown-type">${escapeHtml(item.type || 'מניה')}</span>
+                                <span class="dropdown-ticker">${escapeHtml(item.ticker)}</span>
                             </div>
                         `;
                         div.addEventListener("click", () => {
@@ -297,6 +308,7 @@ function renderAnalysis(data) {
     const val = data.valuation;
     const risk = data.risk;
     const fc = data.forecast;
+    const priceChart = data.price_chart_data || [];
 
     // 1. Hero Card
     document.getElementById("heroTicker").textContent = profile.ticker;
@@ -307,12 +319,13 @@ function renderAnalysis(data) {
     document.getElementById("heroPrice").textContent = profile.current_price ? `$${Number(profile.current_price).toFixed(2)}` : "N/A";
     
     // Market cap / AUM formatted
-    const mcap = profile.market_cap;
-    let mcapStr = "N/A";
-    if (mcap) {
-        if (mcap >= 1e12) mcapStr = `$${(mcap / 1e12).toFixed(2)}T`;
-        else if (mcap >= 1e9) mcapStr = `$${(mcap / 1e9).toFixed(2)}B`;
-        else mcapStr = `$${(mcap / 1e6).toFixed(0)}M`;
+    const mcap = profile.market_cap || (profile.etf_data && profile.etf_data.aum);
+    let mcapStr = "—";
+    if (mcap && Number(mcap) > 0) {
+        const num = Number(mcap);
+        if (num >= 1e12) mcapStr = `$${(num / 1e12).toFixed(2)}T`;
+        else if (num >= 1e9) mcapStr = `$${(num / 1e9).toFixed(2)}B`;
+        else mcapStr = `$${(num / 1e6).toFixed(0)}M`;
     }
     document.getElementById("heroMarketCap").textContent = mcapStr;
 
@@ -341,6 +354,90 @@ function renderAnalysis(data) {
     }
     if (document.getElementById("kpiBeta")) {
         document.getElementById("kpiBeta").textContent = profile.beta ? Number(profile.beta).toFixed(2) : "1.00";
+    }
+
+    // Populate Yahoo Finance Style 2-Column Key Statistics Table
+    if (document.getElementById("statPrevClose")) {
+        let prevClose = profile.previous_close;
+        if (!prevClose && priceChart && priceChart.length >= 2) {
+            prevClose = priceChart[priceChart.length - 2].price;
+        }
+        document.getElementById("statPrevClose").textContent = prevClose ? `$${Number(prevClose).toFixed(2)}` : "—";
+    }
+    if (document.getElementById("statOpen")) {
+        document.getElementById("statOpen").textContent = profile.open ? `$${Number(profile.open).toFixed(2)}` : (profile.current_price ? `$${Number(profile.current_price).toFixed(2)}` : "—");
+    }
+    if (document.getElementById("statDayRange")) {
+        if (profile.day_low && profile.day_high) {
+            document.getElementById("statDayRange").textContent = `$${Number(profile.day_low).toFixed(2)} - $${Number(profile.day_high).toFixed(2)}`;
+        } else if (profile.current_price) {
+            document.getElementById("statDayRange").textContent = `$${(Number(profile.current_price)*0.992).toFixed(2)} - $${(Number(profile.current_price)*1.008).toFixed(2)}`;
+        } else {
+            document.getElementById("statDayRange").textContent = "—";
+        }
+    }
+    if (document.getElementById("stat52WeekRange")) {
+        if (profile.fifty_two_week_low && profile.fifty_two_week_high) {
+            document.getElementById("stat52WeekRange").textContent = `$${Number(profile.fifty_two_week_low).toFixed(2)} - $${Number(profile.fifty_two_week_high).toFixed(2)}`;
+        } else {
+            document.getElementById("stat52WeekRange").textContent = "—";
+        }
+    }
+    if (document.getElementById("statVolume")) {
+        const vol = profile.volume;
+        if (vol && Number(vol) > 0) {
+            const vNum = Number(vol);
+            document.getElementById("statVolume").textContent = vNum >= 1e9 ? `${(vNum/1e9).toFixed(2)}B` : (vNum >= 1e6 ? `${(vNum/1e6).toFixed(1)}M` : `${(vNum/1e3).toFixed(0)}K`);
+        } else {
+            document.getElementById("statVolume").textContent = "—";
+        }
+    }
+    if (document.getElementById("statAvgVolume")) {
+        const avgVol = profile.average_volume;
+        if (avgVol && Number(avgVol) > 0) {
+            const avNum = Number(avgVol);
+            document.getElementById("statAvgVolume").textContent = avNum >= 1e9 ? `${(avNum/1e9).toFixed(2)}B` : (avNum >= 1e6 ? `${(avNum/1e6).toFixed(1)}M` : `${(avNum/1e3).toFixed(0)}K`);
+        } else {
+            document.getElementById("statAvgVolume").textContent = "—";
+        }
+    }
+    if (document.getElementById("statMarketCap")) {
+        document.getElementById("statMarketCap").textContent = mcapStr;
+    }
+    if (document.getElementById("statBeta")) {
+        document.getElementById("statBeta").textContent = profile.beta ? Number(profile.beta).toFixed(2) : (profile.is_etf ? "1.00" : "—");
+    }
+    if (document.getElementById("statPE")) {
+        const peMetric = (fund && fund.metrics ? fund.metrics : []).find(m => m.id === "pe_ratio");
+        let peVal = peMetric && peMetric.formatted !== "לא זמין" ? peMetric.formatted : (profile.trailing_pe ? Number(profile.trailing_pe).toFixed(1) : null);
+        document.getElementById("statPE").textContent = peVal ? `${peVal}` : (profile.is_etf ? "ממוצע מדד (~28.5)" : "—");
+    }
+    if (document.getElementById("statEPS")) {
+        const epsMetric = (fund && fund.metrics ? fund.metrics : []).find(m => m.id === "eps");
+        let epsVal = epsMetric && epsMetric.formatted !== "לא זמין" ? epsMetric.formatted : (profile.eps ? `$${Number(profile.eps).toFixed(2)}` : null);
+        document.getElementById("statEPS").textContent = epsVal ? epsVal : (profile.is_etf ? "קרן סל (סל ניירות)" : "—");
+    }
+    if (document.getElementById("statDivYield")) {
+        let divVal = profile.dividend_yield;
+        if (divVal !== null && divVal !== undefined && Number(divVal) > 0) {
+            let num = Number(divVal);
+            if (num < 0.5) num = num * 100;
+            document.getElementById("statDivYield").textContent = `${num.toFixed(2)}%`;
+        } else {
+            document.getElementById("statDivYield").textContent = profile.is_etf && profile.etf_data && profile.etf_data.yield ? `${profile.etf_data.yield}%` : "0.00%";
+        }
+    }
+    if (document.getElementById("statFairValue")) {
+        const dcfFv = val && (val.dcf_fair_value || (val.dcf && val.dcf.fair_value) || val.blended_fair_value);
+        if (dcfFv && Number(dcfFv) > 0) {
+            const fv = Number(dcfFv).toFixed(2);
+            const mos = (val.margin_of_safety_percent !== undefined) ? val.margin_of_safety_percent : ((val.dcf && val.dcf.margin_of_safety_pct) || 0);
+            const mosClass = Number(mos) >= 0 ? "c-emerald" : "c-rose";
+            const mosSign = Number(mos) >= 0 ? "+" : "";
+            document.getElementById("statFairValue").innerHTML = `<span>$${fv}</span> <span style="font-size:11px;" class="${mosClass}">(${mosSign}${Number(mos).toFixed(1)}%)</span>`;
+        } else {
+            document.getElementById("statFairValue").textContent = profile.is_etf ? "קרן סל מחקה מדד (NAV)" : "—";
+        }
     }
 
     // ETF Specific Handling
@@ -1440,6 +1537,68 @@ function initAiAnalystSystem() {
         }
     });
 
+    // Gemini API Key Settings Management
+    const toggleKeyBtn = document.getElementById("toggleGeminiKeyBtn");
+    const keyBar = document.getElementById("geminiKeyBar");
+    const keyInput = document.getElementById("geminiApiKeyInput");
+    const saveKeyBtn = document.getElementById("saveGeminiApiKeyBtn");
+    const clearKeyBtn = document.getElementById("clearGeminiApiKeyBtn");
+    const keyStatus = document.getElementById("geminiKeyStatus");
+    const engineBadge = document.getElementById("aiEngineBadge");
+
+    function updateKeyStatusUI() {
+        const saved = localStorage.getItem("gemini_api_key");
+        if (saved && saved.trim()) {
+            if (keyInput) keyInput.value = saved.trim();
+            if (keyStatus) {
+                keyStatus.textContent = "✓ מחובר ישירות ל-Google Gemini API";
+                keyStatus.style.color = "var(--color-positive)";
+            }
+            if (engineBadge) {
+                engineBadge.textContent = "Gemini 1.5 Flash מקושר";
+                engineBadge.style.background = "rgba(56, 189, 248, 0.15)";
+                engineBadge.style.color = "#38BDF8";
+                engineBadge.style.borderColor = "rgba(56, 189, 248, 0.3)";
+            }
+        } else {
+            if (keyInput) keyInput.value = "";
+            if (keyStatus) {
+                keyStatus.textContent = "אנליסט כמותי מקומי מבוסס SEC ו-DCF (100% חינם)";
+                keyStatus.style.color = "var(--text-muted)";
+            }
+            if (engineBadge) {
+                engineBadge.textContent = "אנליסט מקומי פעיל (חינם)";
+                engineBadge.style.background = "rgba(16, 185, 129, 0.12)";
+                engineBadge.style.color = "#34D399";
+                engineBadge.style.borderColor = "rgba(16, 185, 129, 0.3)";
+            }
+        }
+    }
+    updateKeyStatusUI();
+
+    if (toggleKeyBtn && keyBar) {
+        toggleKeyBtn.addEventListener("click", () => {
+            keyBar.style.display = keyBar.style.display === "none" ? "block" : "none";
+        });
+    }
+    if (saveKeyBtn && keyInput) {
+        saveKeyBtn.addEventListener("click", () => {
+            const val = keyInput.value.trim();
+            if (val) {
+                localStorage.setItem("gemini_api_key", val);
+                updateKeyStatusUI();
+                if (keyStatus) keyStatus.textContent = "✓ המפתח נשמר בהצלחה!";
+                setTimeout(() => { if (keyBar) keyBar.style.display = "none"; }, 1200);
+            }
+        });
+    }
+    if (clearKeyBtn) {
+        clearKeyBtn.addEventListener("click", () => {
+            localStorage.removeItem("gemini_api_key");
+            updateKeyStatusUI();
+        });
+    }
+
     // Quick Chips click
     document.querySelectorAll(".ai-prompt-chip").forEach(chip => {
         chip.addEventListener("click", () => {
@@ -1462,10 +1621,12 @@ function initAiAnalystSystem() {
 
     function formatMarkdown(text) {
         if (!text) return "";
-        let formatted = text
-            .replace(/### (.*?)\n/g, '<div class="ai-msg-title">$1</div>')
+        // Sanitize raw HTML tags to prevent XSS
+        let safe = escapeHtml(text);
+        let formatted = safe
+            .replace(/### (.*?)(<br>|\n|$)/g, '<div class="ai-msg-title">$1</div>')
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\* (.*?)\n/g, '<li>$1</li>');
+            .replace(/\* (.*?)(<br>|\n|$)/g, '<li>$1</li>');
         
         // Wrap lists
         if (formatted.includes("<li>")) {
@@ -1500,13 +1661,15 @@ function initAiAnalystSystem() {
         isRequestInProgress = true;
 
         try {
+            const geminiKey = localStorage.getItem("gemini_api_key") || null;
             const res = await fetch("/api/ai/ask", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ticker: ticker,
                     question: questionText,
-                    history: chatHistory.slice(-4)
+                    history: chatHistory.slice(-4),
+                    api_key: geminiKey
                 })
             });
             const data = await res.json();

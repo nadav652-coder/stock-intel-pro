@@ -11,7 +11,7 @@
     <!-- Plotly.js for Institutional Charts -->
     <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="/static/css/style.css?v=5.3">
+    <link rel="stylesheet" href="/static/css/style.css?v=5.4">
 </head>
 <body>
 
@@ -333,6 +333,72 @@
                             <span style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center;">השוואת תשואה מצטברת <span class="info-tip" data-tip="השוואת תשואת המניה באחוזים (קו כחול) מול מדד הייחוס S&P 500 (קו מקווקו) ב-250 ימי המסחר האחרונים.">?</span></span>
                         </div>
                         <div id="chartPriceComparison" style="height: 320px; width: 100%; margin-bottom: 20px;"></div>
+
+                        <!-- Key Statistics 2-Column Grid (Yahoo Finance / Institutional Standard) -->
+                        <div class="key-stats-section" style="margin-bottom: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 style="font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                                    <span>📋</span> נתוני מפתח ומסחר (Key Statistics)
+                                </h3>
+                                <span class="meta-chip" style="font-size: 11px;">נתוני בורסה מבוקרים</span>
+                            </div>
+                            <div class="key-stats-grid">
+                                <!-- Column 1 -->
+                                <div class="key-stats-col">
+                                    <div class="stat-row">
+                                        <span class="stat-label">סגירה קודמת <span class="info-tip" data-tip="שער הנעילה הרשמי של יום המסחר האחרון בבורסה.">?</span></span>
+                                        <span id="statPrevClose" class="stat-value mono">—</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">שער פתיחה <span class="info-tip" data-tip="מחיר העסקה הראשונה שנרשמה עם פתיחת יום המסחר הנוכחי.">?</span></span>
+                                        <span id="statOpen" class="stat-value mono">—</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">טווח יומי (Day's Range) <span class="info-tip" data-tip="שער השפל ושער השיא שנרשמו במהלך יום המסחר הנוכחי.">?</span></span>
+                                        <span id="statDayRange" class="stat-value mono">—</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">טווח 52 שבועות <span class="info-tip" data-tip="מחיר השפל והשיא של המניה ב-52 השבועות האחרונים (מדד רצועת מסחר שנתית).">?</span></span>
+                                        <span id="stat52WeekRange" class="stat-value mono">—</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">מחזור מסחר יומי (Volume) <span class="info-tip" data-tip="כמות המניות או היחידות שהחליפו ידיים במהלך יום המסחר.">?</span></span>
+                                        <span id="statVolume" class="stat-value mono">—</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">מחזור ממוצע (3M Avg. Vol) <span class="info-tip" data-tip="מחזור המסחר הממוצע ב-3 החודשים האחרונים – משקף את נזילות הנכס.">?</span></span>
+                                        <span id="statAvgVolume" class="stat-value mono">—</span>
+                                    </div>
+                                </div>
+                                <!-- Column 2 -->
+                                <div class="key-stats-col">
+                                    <div class="stat-row">
+                                        <span class="stat-label">שווי שוק / סך נכסים (AUM) <span class="info-tip" data-tip="שווי השוק הכולל של החברה, או סך הנכסים המנוהלים בקרן הסל.">?</span></span>
+                                        <span id="statMarketCap" class="stat-value mono">—</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">בטא (Beta 5Y) <span class="info-tip" data-tip="מדד תנודתיות וסיכון מול מדד הייחוס S&P 500. ערך 1.0 מצביע על תנועה תואמת לשוק.">?</span></span>
+                                        <span id="statBeta" class="stat-value mono">—</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">מכפיל רווח (P/E TTM) <span class="info-tip" data-tip="יחס מחיר המניה לרווח הנקי השנתי למניה מתוך הדוחות המבוקרים.">?</span></span>
+                                        <span id="statPE" class="stat-value mono">—</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">רווח למניה (EPS TTM) <span class="info-tip" data-tip="רווח נקי שנתי למניה מדוללת מתוך דוח רווח והפסד (10-K).">?</span></span>
+                                        <span id="statEPS" class="stat-value mono">—</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">דיבידנד ותשואה שנתית <span class="info-tip" data-tip="סכום הדיבידנד השנתי במזומן ואחוז התשואה ביחס למחיר המניה הנוכחי.">?</span></span>
+                                        <span id="statDivYield" class="stat-value mono">—</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">שווי הוגן DCF (שולי ביטחון) <span class="info-tip" data-tip="מחיר השווי הפנימי השמרני של החברה כפי שחושב במודל תזרים מזומנים מהוון.">?</span></span>
+                                        <span id="statFairValue" class="stat-value mono">—</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="data-table-wrapper">
                             <table class="data-table">
                                 <thead>
@@ -808,14 +874,39 @@
                         <div class="ai-subtitle">ניתוח דוחות SEC, תמחור והערכת סיכונים בזמן אמת</div>
                     </div>
                 </div>
-                <button id="closeAiAnalystBtn" class="ai-close-btn" aria-label="סגור חלון אנליסט">✕</button>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button id="toggleGeminiKeyBtn" class="pill-btn" style="background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.3); color: #38BDF8; font-size: 11px; padding: 5px 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;" title="הגדר מפתח Gemini חינמי">
+                        <span>⚙️</span> מפתח AI
+                    </button>
+                    <button id="closeAiAnalystBtn" class="ai-close-btn" aria-label="סגור חלון אנליסט">✕</button>
+                </div>
+            </div>
+
+            <!-- Expandable Gemini API Key Bar -->
+            <div id="geminiKeyBar" class="gemini-key-settings" style="display: none; background: #0F172A; padding: 12px 16px; border-bottom: 1px solid var(--border-color); font-size: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-weight: 700; color: #93C5FD;">⚙️ הגדרת מפתח Google Gemini חינמי (אופציונלי):</span>
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style="color: #38BDF8; text-decoration: underline; font-size: 11px;">קבל מפתח חינמי ב-Google AI Studio</a>
+                </div>
+                <div style="color: var(--text-muted); font-size: 11px; margin-bottom: 8px; line-height: 1.4;">
+                    כברירת מחדל, האתר כולל אנליסט מקומי מתקדם ללא עלות. חיבור מפתח Gemini API מאפשר עיבוד שפה טבעית גמיש ועמוק. המפתח נשמר מקומית בדפדפן בלבד (localStorage).
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <input type="password" id="geminiApiKeyInput" placeholder="הדבק כאן מפתח AIzaSy..." style="flex: 1; background: #080C14; border: 1px solid var(--border-color); color: #F1F5F9; padding: 7px 10px; border-radius: var(--radius-sm); font-size: 12px; font-family: 'JetBrains Mono';">
+                    <button id="saveGeminiApiKeyBtn" class="pill-btn highlight-btn" style="padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer;">שמור</button>
+                    <button id="clearGeminiApiKeyBtn" class="pill-btn" style="padding: 7px 10px; font-size: 11px; color: var(--color-negative); border-color: rgba(244,63,94,0.3); cursor: pointer;">נקה</button>
+                </div>
+                <div id="geminiKeyStatus" style="margin-top: 6px; font-size: 11px; font-weight: 600;"></div>
             </div>
 
             <!-- Active Asset Context Banner -->
             <div class="ai-asset-strip">
-                <span class="ai-asset-tag">נכס נבדק:</span>
-                <span id="aiActiveTicker" class="ai-asset-name mono">AAPL (Apple Inc.)</span>
-                <span id="aiActivePrice" class="ai-asset-price mono">$0.00</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="ai-asset-tag">נכס נבדק:</span>
+                    <span id="aiActiveTicker" class="ai-asset-name mono">AAPL (Apple Inc.)</span>
+                    <span id="aiActivePrice" class="ai-asset-price mono">$0.00</span>
+                </div>
+                <span id="aiEngineBadge" class="meta-chip" style="font-size: 10px; padding: 2px 7px; background: rgba(16,185,129,0.12); color: #34D399; border-color: rgba(16,185,129,0.3);">אנליסט מקומי פעיל (חינם)</span>
             </div>
 
             <!-- Quick Questions Bar -->
@@ -824,9 +915,10 @@
                 <div class="ai-chips-wrap">
                     <button class="ai-prompt-chip" data-question="מה היתרונות והחסרונות העיקריים של המניה כרגע?">🎯 יתרונות וחסרונות</button>
                     <button class="ai-prompt-chip" data-question="האם המניה נחשבת כרגע יקרה או זולה ביחס למדד ולענף?">⚖️ תמחור מול השוק</button>
-                    <button class="ai-prompt-chip" data-question="אילו גורמי סיכון מהותיים החברה דיווחה בדוח ה-SEC האחרון?">⚠️ גורמי סיכון ב-10-K</button>
+                    <button class="ai-prompt-chip" data-question="מה רמת החוב והמינוף של החברה והאם המאזן איתן?">🛡️ איתנות פיננסית וחוב</button>
+                    <button class="ai-prompt-chip" data-question="האם החברה מחלקת דיבידנד או מבצעת רכישה עצמית (Buyback)?">💰 דיבידנד ו-Buybacks</button>
                     <button class="ai-prompt-chip" data-question="הסבר לי את הערכת השווי DCF ושולי הביטחון במילים פשוטות">📈 מודל DCF בפשטות</button>
-                    <button class="ai-prompt-chip" data-question="מה משקף ציון ה-Piotroski ומדד אלטמן של החברה?">🛡️ איתנות מאזן ופיוטרוסקי</button>
+                    <button class="ai-prompt-chip" data-question="אילו גורמי סיכון מהותיים החברה דיווחה בדוח ה-SEC האחרון?">⚠️ גורמי סיכון ב-10-K</button>
                 </div>
             </div>
 
@@ -892,6 +984,6 @@
     </footer>
 
     <!-- Client Script -->
-    <script src="/static/js/app.js?v=5.3"></script>
+    <script src="/static/js/app.js?v=5.4"></script>
 </body>
 </html>

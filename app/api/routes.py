@@ -5,6 +5,7 @@ FastAPI Routes module: Endpoints for Stock Analysis, DCF Simulation, Search, and
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse, FileResponse
 from pathlib import Path
+import re
 from typing import Dict, Any, List
 from app.api.service import analysis_service
 from app.engines.search_resolver import SearchResolver
@@ -47,7 +48,7 @@ async def get_stock_analysis(ticker: str):
             ticker = "AAPL"
 
     ticker = ticker.upper().strip()
-    if not ticker or len(ticker) > 15:
+    if not ticker or len(ticker) > 15 or not re.match(r'^[A-Z0-9\.\-\^]{1,15}$', ticker):
         raise HTTPException(status_code=400, detail="סימול מניה לא תקין")
     try:
         data = analysis_service.run_full_analysis(ticker)
@@ -80,6 +81,8 @@ async def simulate_dcf(request: DCFSimulationRequest):
 
 @router.post("/api/portfolio/analyze", response_model=ApiResponse)
 async def analyze_portfolio_endpoint(request: PortfolioAnalyzeRequest):
+    if len(request.holdings) > 100:
+        raise HTTPException(status_code=400, detail="התיק מכיל יותר מדי נכסים (מקסימום 100)")
     try:
         holdings_dicts = [h.dict() for h in request.holdings]
         analysis = analysis_service.analyze_portfolio(holdings_dicts)
@@ -95,13 +98,19 @@ async def ask_ai_analyst(request: AIAskRequest):
     question = request.question.strip()
     if not ticker or not question:
         raise HTTPException(status_code=400, detail="נדרש סימול מניה ושאלה תקינה")
+    if not re.match(r'^[A-Z0-9\.\-\^]{1,15}$', ticker):
+        raise HTTPException(status_code=400, detail="סימול מניה לא תקין")
+    # Cap question length to prevent memory abuse
+    if len(question) > 1000:
+        question = question[:1000]
     try:
         stock_data = analysis_service.run_full_analysis(ticker)
         res = AIAnalystEngine.ask(
             ticker=ticker,
             question=question,
             data=stock_data,
-            history=request.history
+            history=request.history,
+            custom_key=request.api_key
         )
         return ApiResponse(success=True, data=res)
     except Exception as e:
@@ -111,7 +120,7 @@ async def ask_ai_analyst(request: AIAskRequest):
 
 @router.get("/api/search")
 async def search_tickers(q: str = Query("", min_length=0)):
-    q = q.strip()
+    q = q.strip()[:50]
     if not q:
         return POPULAR_TICKERS
     try:
